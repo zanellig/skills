@@ -1,6 +1,6 @@
 ---
 name: tanstack-nonblocking-loaders
-description: Make TanStack Start/Router navigations instant by turning blocking route loaders into non-blocking React Query cache warm-ups. Use when adding or editing a route, loader, or beforeLoad in a TanStack Start/Router app that uses React Query or TanStack DB, when connecting a loader to a server function, when configuring the router or QueryClient (preload, staleTime), or when diagnosing slow/dead clicks, missing pending UI, refetch on back-navigation, or duplicate server-fn calls per navigation.
+description: Make TanStack Start/Router navigations instant by turning blocking route loaders into non-blocking React Query cache warm-ups. Use when adding or editing a route, loader, or beforeLoad in a TanStack Start/Router app that uses React Query or TanStack DB; when configuring the router or QueryClient (preload, staleTime); or when diagnosing slow navigations — dead clicks, missing pending UI, refetch on back-navigation, duplicate server-fn calls.
 ---
 
 # Non-blocking loaders in TanStack Start
@@ -9,15 +9,12 @@ Navigations feel dead when loaders await server functions. The fix: loaders
 only *warm* the React Query cache; components own fetching, loading, and
 error UI. Navigation commits immediately.
 
-## Symptoms this fixes
+## Symptom → step
 
-- Click → nothing happens for hundreds of ms, then the page swaps.
-- Route `pendingComponent` never visibly renders.
-- Back-navigation to an already-visited route refetches everything.
-- The same server fn fires 2–3× per navigation (hover preload + loader +
-  component/collection refetch).
-- `beforeLoad` doing auth/context work re-runs a server round trip on every
-  navigation in the subtree.
+- Click feels dead; pending UI never renders → step 2
+- Revisiting a route refetches everything → step 3
+- Same server fn fires 2–3× per navigation → steps 1, 3, 4
+- Every navigation in a subtree pays a `beforeLoad` round trip → step 5
 
 ## The pattern
 
@@ -40,8 +37,8 @@ error UI. Navigation commits immediately.
    }
    ```
 
-2. **Loader = fire-and-forget prefetch.** Never `await` data; never
-   `setQueryData` from an awaited fetch:
+2. **Loader = fire-and-forget warm-up.** The whole loader body is one
+   synchronous statement — kick off the prefetch, return before it resolves:
 
    ```ts
    loader: ({ params, context }) => {
@@ -60,8 +57,9 @@ error UI. Navigation commits immediately.
    ```
 
 4. **Hover preloading comes free.** `defaultPreload: "intent"` runs the
-   loader on hover, which now warms the same cache entry. Do NOT set
-   `defaultPreloadStaleTime: 0` — that refires a full fetch on every hover.
+   loader on hover, which now warms the same cache entry. Leave
+   `defaultPreloadStaleTime` at its default — 0 refires a full fetch on
+   every hover.
 
 5. **`beforeLoad` context goes through `ensureQueryData`** so it stops
    re-fetching per navigation. Use `retry: false` when the fn can throw a
@@ -88,7 +86,7 @@ error UI. Navigation commits immediately.
 
 ## Verify
 
-Drive the app and check: navigation commits in tens of
-ms with a visible loading state; revisiting a route makes **zero** network
-calls; each cold navigation fires each server fn
-exactly once; a bad deep link shows the inline error, not an empty state.
+Drive the app and check: navigation commits in tens of ms with a visible
+loading state; revisiting a route makes **zero** network calls; each cold
+navigation fires each server fn exactly once; a bad deep link shows the
+inline error, not an empty state.

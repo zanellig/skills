@@ -25,7 +25,7 @@ end-to-end piece of a larger spec/PRD that ships on its own. Reviews come from t
 
 7. **Address every finding.** Fix each one and add a regression test per finding. Do not hand-wave a finding away without either a code change or a written justification in the re-request comment.
 
-8. **Loop 3 -> 7** until a round returns zero new actionable findings (a review that approves or says no issues) or three review passes were completed. Then continue.
+8. **Loop** until a round returns zero new actionable findings (a review that approves or says no issues) or **three** review passes were completed. Then continue.
 
 9. **CI green.** `gh pr checks <n>`. Fix reds and re-push before merging.
 

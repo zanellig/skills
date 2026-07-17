@@ -2,6 +2,7 @@
 name: ship-slice
 description: Drive a slice from implementation through Codex review rounds to a merged PR. Use when implementing a slice/issue that must pass @codex review before merge, when the user says "ship", "work the slice", "get this through review", or when addressing Codex review findings on a PR.
 argument-hint: "slice issue number or handoff path"
+disable-model-invocation: true
 ---
 
 # Ship Slice

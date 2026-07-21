@@ -16,7 +16,7 @@ end-to-end piece of a larger spec/PRD that ships on its own. Reviews come from t
 
 2. **Implement to acceptance criteria, with tests.** Every behavior change gets a test. Run the project's test/check suite and make it green. Format before committing.
 
-3. **Commit and push.** Commit by scope with clear messages. After pushing, confirm the remote head actually moved — `git rev-parse HEAD` should equal `git rev-parse @{u}`. (Some git wrappers silently drop pushes; Codex reviews whatever is really on the remote.)
+3. **Commit and push.** Commit by scope with conventional-commit messages. Push with an **explicit remote and branch** — `git push origin <branch>`. A *bare* `git push` whose output is piped (e.g. `git push 2>&1 | tail`) is silently dropped by the rtk layer — no output, exit 0 — even without typing the `rtk` prefix (verified 2026-07-20; it cost PR #43 two commits). After any push that matters, verify it landed: `git ls-remote origin refs/heads/<branch>` must equal `git rev-parse HEAD`.
 
 4. **Open the PR.** Title `Slice <id>: <summary>`. Body references the parent spec and the issues it closes. Draft PRs are fine; mark ready before requesting review: `gh pr ready <n>`.
 

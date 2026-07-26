@@ -1,6 +1,6 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 // Regenerates skills/README.md from each SKILL.md frontmatter.
-// Usage: node scripts/gen-reference.mjs [--check]
+// Usage: bun scripts/gen-reference.mjs [--check]
 import { globSync, readFileSync, writeFileSync } from "node:fs";
 
 const OUT = "skills/README.md";
@@ -11,13 +11,12 @@ const skills = globSync("skills/**/SKILL.md")
     const src = readFileSync(path, "utf8");
     const fm = src.match(/^---\n([\s\S]*?)\n---/);
     if (!fm) throw new Error(`${path}: missing frontmatter`);
-    const field = (key) =>
-      fm[1].match(new RegExp(`^${key}:[ \\t]*(.*)$`, "m"))?.[1].trim().replace(/^["']|["']$/g, "");
+    const { name, description = "" } = Bun.YAML.parse(fm[1]);
     const parts = path.split("/"); // skills/[category/]name/SKILL.md
     // ponytail: naive first-sentence split, fine until a description uses "e.g."
-    const summary = (field("description") ?? "").split(/(?<=\.)\s+(?=[A-Z])/)[0];
+    const summary = description.trim().replace(/\s+/g, " ").split(/(?<=\.)\s+(?=[A-Z])/)[0];
     return {
-      name: field("name") ?? parts.at(-2),
+      name: name ?? parts.at(-2),
       category: parts.length > 3 ? parts[1] : "misc",
       summary,
       link: `./${parts.slice(1).join("/")}`,
@@ -50,7 +49,7 @@ try {
 
 if (process.argv.includes("--check")) {
   if (next !== current) {
-    console.error(`${OUT} is stale. Run: node scripts/gen-reference.mjs`);
+    console.error(`${OUT} is stale. Run: bun scripts/gen-reference.mjs`);
     process.exit(1);
   }
 } else if (next !== current) {

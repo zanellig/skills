@@ -27,5 +27,5 @@ bunx skills add ~/projects/skills --skill bump --skill commit --full-depth
 See [skills/README.md](./skills/README.md) for the full list, generated from each skill's frontmatter:
 
 ```sh
-node scripts/gen-reference.mjs
+bun scripts/gen-reference.mjs
 ```

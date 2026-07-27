@@ -5,13 +5,39 @@ import { globSync, readFileSync, writeFileSync } from "node:fs";
 
 const OUT = "skills/README.md";
 
+// Abbreviations whose period does not end a sentence. Only ones plausibly followed
+// by a capitalised word are listed: a false entry costs a long summary, a missing
+// one truncates mid-phrase. "etc." and "Inc." are deliberately absent — in a
+// description they almost always sit at the end of the sentence.
+const ABBREVIATIONS = [
+  // English titles, Latin, measures
+  "Dr", "Mr", "Mrs", "Ms", "Prof", "Sr", "Jr", "St", "Rev", "Gov", "Sen", "approx", "vs", "cf", "et", "al",
+  // Spanish titles, references, common shorthand
+  "Sra", "Srta", "Dra", "Dña", "art", "arts", "pág", "págs", "núm", "cap", "ed", "aprox", "ej",
+  "EE", "UU", "Ud", "Uds", "Vd", "tel", "av", "Avda",
+  // Month abbreviations
+  "Jan", "Feb", "Mar", "Apr", "Jun", "Jul", "Aug", "Sep", "Sept", "Oct", "Nov", "Dec",
+  "ene", "feb", "abr", "ago", "sept", "set", "oct", "nov", "dic",
+];
+
+// A trailing abbreviation: a lone letter (e.g., i.e., U.S., Ph.D., p. ej.) or a word
+// from the list above. The leading non-letter keeps it from matching a word's last
+// letter, so "semver tags." is a sentence end while "p." is not.
+const ABBREV_END = new RegExp(`(?:^|[^\\p{L}])(?:\\p{L}|${ABBREVIATIONS.join("|")})\\.$`, "u");
+
+// Sentence starts: a capital in any alphabet, or the Spanish opening ¿ / ¡.
+const SENTENCE_START = /(?<=\.)\s+(?=[\p{Lu}¿¡])/u;
+
 // First sentence of a description; the rest is trigger text ("Use when ...") that
-// only the model needs. A period does not end a sentence when it belongs to an
-// abbreviation: one with an internal period (e.g., i.e., U.S.), a short lowercase
-// one (vs., cf.), or a title (Dr., Mr.). All-caps acronyms (PR., UI.) do end one,
-// and so does "etc." — both are far more common at a sentence end than mid-sentence.
-const SENTENCE_END = /(?<=(?<!\b\w\.\w)(?<!\b[a-z]{1,2})(?<!\b[A-Z][a-z])\.)\s+(?=[A-Z])/;
-export const summarize = (description) => description.trim().replace(/\s+/g, " ").split(SENTENCE_END)[0];
+// only the model needs.
+export const summarize = (description) => {
+  let summary = "";
+  for (const sentence of description.trim().replace(/\s+/g, " ").split(SENTENCE_START)) {
+    summary += (summary ? " " : "") + sentence;
+    if (!ABBREV_END.test(summary)) break;
+  }
+  return summary;
+};
 
 const title = (s) => s.replace(/(^|[-\s])(\w)/g, (_, sep, c) => (sep === "-" ? " " : sep) + c.toUpperCase());
 

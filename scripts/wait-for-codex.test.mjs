@@ -6,7 +6,7 @@ import { join } from "node:path";
 const SCRIPT = join(import.meta.dir, "../skills/productivity/ship-slice/scripts/wait-for-codex.sh");
 const SINCE = "2026-08-15T22:11:52Z";
 
-function runWaiter(reactionCount) {
+function runWaiter(prReactionCount, commentReactionCount = 0, pendingCount = 0) {
   const bin = mkdtempSync(join(tmpdir(), "wait-for-codex-"));
   const gh = join(bin, "gh");
 
@@ -15,7 +15,14 @@ function runWaiter(reactionCount) {
       gh,
       `#!/usr/bin/env bash
 case "$*" in
-  *issues/3/reactions*"length"*) echo "${reactionCount}" ;;
+  *reactions*) [[ "$*" == *--paginate* && "$*" == *--slurp* ]] || exit 9 ;;
+esac
+case "$*" in
+  *issues/comments/42/reactions*"length"*) echo "${commentReactionCount}" ;;
+  *issues/comments/42/reactions*) ${commentReactionCount > 0 ? `echo '{"content":"+1","created_at":"2026-08-15T22:13:52Z"}'` : ":"} ;;
+  *issues/3/comments*".id"*) echo 42 ;;
+  *issues/3/reactions*eyes*"length"*) echo "${pendingCount}" ;;
+  *issues/3/reactions*"length"*) echo "${prReactionCount}" ;;
   *issues/3/reactions*) echo '{"content":"+1","created_at":"2026-08-15T22:13:52Z"}' ;;
   *"length"*) echo 0 ;;
 esac
@@ -44,4 +51,18 @@ test("no fresh Codex response still times out", () => {
 
   expect(result.exitCode).toBe(1);
   expect(result.stdout.toString()).toContain("TIMEOUT: no Codex response");
+});
+
+test("a fresh Codex thumbs-up on a review request completes a clean review", () => {
+  const result = runWaiter(0, 1);
+
+  expect(result.exitCode).toBe(0);
+  expect(result.stdout.toString()).toContain('"content":"+1"');
+});
+
+test("a fresh eyes reaction reports an in-flight review after the wait expires", () => {
+  const result = runWaiter(0, 0, 1);
+
+  expect(result.exitCode).toBe(2);
+  expect(result.stdout.toString()).toContain("PENDING: Codex review is in flight");
 });

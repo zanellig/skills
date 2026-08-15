@@ -15,15 +15,15 @@ function runWaiter(prReactionCount, commentReactionCount = 0, pendingCount = 0) 
       gh,
       `#!/usr/bin/env bash
 case "$*" in
-  *reactions*) [[ "$*" == *--paginate* && "$*" == *--slurp* ]] || exit 9 ;;
+  *reactions*) [[ "$*" == *--paginate* && "$*" != *--slurp* ]] || exit 9 ;;
+  *issues/3/comments*".id"*) [[ "$*" == *">="* ]] || exit 10 ;;
 esac
 case "$*" in
-  *issues/comments/42/reactions*"length"*) echo "${commentReactionCount}" ;;
   *issues/comments/42/reactions*) ${commentReactionCount > 0 ? `echo '{"content":"+1","created_at":"2026-08-15T22:13:52Z"}'` : ":"} ;;
   *issues/3/comments*".id"*) echo 42 ;;
-  *issues/3/reactions*eyes*"length"*) echo "${pendingCount}" ;;
-  *issues/3/reactions*"length"*) echo "${prReactionCount}" ;;
-  *issues/3/reactions*) echo '{"content":"+1","created_at":"2026-08-15T22:13:52Z"}' ;;
+  *issues/3/reactions*eyes*".id"*) ${pendingCount > 0 ? "echo 77" : ":"} ;;
+  *issues/3/reactions*+1*".id"*) ${prReactionCount > 0 ? "echo 77" : ":"} ;;
+  *issues/3/reactions*+1*) ${prReactionCount > 0 ? `echo '{"content":"+1","created_at":"2026-08-15T22:13:52Z"}'` : ":"} ;;
   *"length"*) echo 0 ;;
 esac
 `,

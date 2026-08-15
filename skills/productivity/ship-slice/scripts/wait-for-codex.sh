@@ -22,14 +22,16 @@ POLLS="${POLLS:-30}"
 INTERVAL="${INTERVAL:-60}"
 
 count_new() {
-  local reviews comments inline
+  local reviews comments inline reactions
   reviews=$(gh api "repos/$REPO/pulls/$PR/reviews" \
     --jq "[.[] | select(.user.login==\"$BOT\" and .submitted_at > \"$SINCE\")] | length" 2>/dev/null || echo 0)
   comments=$(gh api "repos/$REPO/issues/$PR/comments" \
     --jq "[.[] | select(.user.login==\"$BOT\" and .created_at > \"$SINCE\")] | length" 2>/dev/null || echo 0)
   inline=$(gh api "repos/$REPO/pulls/$PR/comments" \
     --jq "[.[] | select(.user.login==\"$BOT\" and .created_at > \"$SINCE\")] | length" 2>/dev/null || echo 0)
-  echo $(( reviews + comments + inline ))
+  reactions=$(gh api "repos/$REPO/issues/$PR/reactions" \
+    --jq "[.[] | select(.user.login==\"$BOT\" and .content==\"+1\" and .created_at > \"$SINCE\")] | length" 2>/dev/null || echo 0)
+  echo $(( reviews + comments + inline + reactions ))
 }
 
 print_findings() {
@@ -43,6 +45,9 @@ print_findings() {
   echo "--- Issue comments ---"
   gh api "repos/$REPO/issues/$PR/comments" \
     --jq ".[] | select(.user.login==\"$BOT\" and .created_at > \"$SINCE\") | {created_at, body}" 2>/dev/null || true
+  echo "--- Clean-review reactions ---"
+  gh api "repos/$REPO/issues/$PR/reactions" \
+    --jq ".[] | select(.user.login==\"$BOT\" and .content==\"+1\" and .created_at > \"$SINCE\") | {content, created_at}" 2>/dev/null || true
 }
 
 for _ in $(seq 1 "$POLLS"); do

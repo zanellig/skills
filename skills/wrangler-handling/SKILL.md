@@ -1,6 +1,6 @@
 ---
 name: wrangler-handling
-description: Load this skill whenever needing to use `wrangler` or when handling Cloudflare configuration or deployment issues. Use when the user says "wrangler", "Cloudflare", "deploy", "configuration", or when addressing wrangler/Cloudflare issues on a PR.
+description: Load this skill before performing or advising on any Cloudflare-related work, including using `wrangler`, inspecting or changing Cloudflare resources, authentication, configuration, development, deployment, debugging, or reviewing Cloudflare-related PR changes. This applies whether or not the user explicitly mentions Cloudflare or Wrangler.
 ---
 
 You have a full-access Cloudflare account with `wrangler` installed and configured. You can use `wrangler` to manage all Cloudflare services.

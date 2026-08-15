@@ -16,11 +16,11 @@ end-to-end piece of a larger spec/PRD that ships on its own. Reviews come from t
 
 2. **Implement to acceptance criteria, with tests.** Every behavior change gets a test. Run the project's test/check suite and make it green. Format before committing.
 
-3. **Commit and push.** Commit by scope with conventional-commit messages. Push with an **explicit remote and branch** — `git push origin <branch>`. A *bare* `git push` whose output is piped (e.g. `git push 2>&1 | tail`) is silently dropped by the rtk layer — no output, exit 0 — even without typing the `rtk` prefix (verified 2026-07-20; it cost PR #43 two commits). After any push that matters, verify it landed: `git ls-remote origin refs/heads/<branch>` must equal `git rev-parse HEAD`.
+3. **Commit, synchronize, and push.** Commit by scope with conventional-commit messages. Before opening the PR, fetch the latest `main` and rebase the branch onto `origin/main`. Push with an **explicit remote and branch** — `git push origin <branch>`. A *bare* `git push` whose output is piped (e.g. `git push 2>&1 | tail`) is silently dropped by the rtk layer — no output, exit 0 — even without typing the `rtk` prefix (verified 2026-07-20; it cost PR #43 two commits). After any push that matters, verify it landed: `git ls-remote origin refs/heads/<branch>` must equal `git rev-parse HEAD`.
 
-4. **Open the PR as a draft.** Use `gh pr create --draft`. Title `Slice <id>: <summary>`. Body references the parent spec and the issues it closes. Codex ignores draft PRs — do not request review while the PR is a draft.
+4. **Open a ready PR.** Immediately before running `gh pr create`, capture `SINCE=$(date -u +%Y-%m-%dT%H:%M:%SZ)`. Open a real, non-draft PR; drafts do not receive review-bot coverage. Title it `Slice <id>: <summary>`. The body references the parent spec and the issues it closes.
 
-5. **Activate round 1 by marking ready.** After the last implementation commit is pushed and verified, capture `SINCE=$(date -u +%Y-%m-%dT%H:%M:%SZ)`, then run `gh pr ready <n>`. The Draft -> Ready transition is the review request. Do not also comment `@codex review`; that activates a second review of the same commit and can return duplicate findings. If the PR was already ready when this process began, do not activate another review. Inspect existing Codex activity and resume from the latest round for the current remote head. If no response exists yet, capture `SINCE` and wait for the pending response.
+5. **Treat PR creation as round 1.** Opening the ready PR activates the initial review. Do not also comment `@codex review`; that activates a second review of the same commit and can return duplicate findings. If the PR already existed when this process began, inspect existing Codex activity and resume from the latest round for the current remote head. If no response exists yet, capture a timestamp that precedes the pending review activity and wait for its response without requesting another review.
 
 6. **Wait for the response** (background command — it sleeps): `scripts/wait-for-codex.sh <n> "$SINCE"` prints the review body, inline findings (path:line), and issue comments once Codex responds. Exits 0 on response, 1 on timeout. A timeout means no answer yet, never zero findings: re-run the waiter with the same `SINCE`; do not recapture the timestamp or request another review.
 
@@ -36,7 +36,7 @@ end-to-end piece of a larger spec/PRD that ships on its own. Reviews come from t
 
 ## Notes
 
-- **One activation per round:** Draft -> Ready activates round 1; one `@codex review` comment activates each later round. Never use both for the same round.
+- **One activation per round:** Opening the ready PR activates round 1; one `@codex review` comment activates each later round. Never send an additional review request for a round that is already pending.
 - Run `wait-for-codex.sh` as a background command; its `sleep` loop would otherwise block the turn.
 - Codex may answer as a PR review, a PR issue-comment, OR inline PR comments — the script checks all three. Filter by `user.login == "chatgpt-codex-connector[bot]"` and a `SINCE` timestamp.
 - Requires the GitHub CLI (`gh`) authenticated for the repo, with the Codex GitHub app installed.

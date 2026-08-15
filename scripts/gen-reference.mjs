@@ -80,11 +80,17 @@ export function render(skills = loadSkills()) {
 const renderCategory = (readme, current, skills) => {
   const directory = dirname(readme);
   const groups = new Map();
-  for (const skill of skills.filter((skill) => skill.path.startsWith(`${directory}/`))) {
+  const indexedSkills = directory === "skills/misc"
+    ? skills.filter((skill) => skill.category === "misc")
+    : skills.filter((skill) => skill.path.startsWith(`${directory}/`));
+  for (const skill of indexedSkills) {
     const skillPath = relative(directory, skill.path);
-    const group = skillPath.split("/").slice(0, -2).join("/");
+    const group = directory === "skills/misc" && !skill.path.startsWith(`${directory}/`)
+      ? ""
+      : skillPath.split("/").slice(0, -2).join("/");
     const lines = groups.get(group) ?? [];
-    lines.push(`- **[${skill.name}](./${skillPath})** — ${skill.summary}`);
+    const link = skillPath.startsWith("../") ? skillPath : `./${skillPath}`;
+    lines.push(`- **[${skill.name}](${link})** — ${skill.summary}`);
     groups.set(group, lines);
   }
   const reference = [...groups]
@@ -97,9 +103,10 @@ const renderCategory = (readme, current, skills) => {
   const generated = `${GENERATED_START}\n${reference}\n${GENERATED_END}`;
   const marked = new RegExp(`${GENERATED_START}[\\s\\S]*?${GENERATED_END}`);
 
-  return marked.test(current)
-    ? current.replace(marked, generated)
-    : `${current.trimEnd()}\n\n${generated}\n`;
+  if (marked.test(current)) return current.replace(marked, () => generated);
+
+  const separator = current === "" || current.endsWith("\n\n") ? "" : current.endsWith("\n") ? "\n" : "\n\n";
+  return `${current}${separator}${generated}\n`;
 };
 
 const readOrEmpty = (path) => {
@@ -116,7 +123,11 @@ if (import.meta.main) {
   const targets = [
     { path: OUT, current: readOrEmpty(OUT), next: body },
     ...globSync("skills/**/README.md")
-      .filter((path) => path !== OUT && !skills.some((skill) => dirname(skill.path) === dirname(path)))
+      .filter((path) => path !== OUT && !skills.some((skill) => {
+        const skillDirectory = dirname(skill.path);
+        const readmeDirectory = dirname(path);
+        return readmeDirectory === skillDirectory || readmeDirectory.startsWith(`${skillDirectory}/`);
+      }))
       .sort()
       .map((path) => {
         const current = readFileSync(path, "utf8");

@@ -66,7 +66,7 @@ test("updates an existing category README through the CLI", () => {
   const cwd = mkdtempSync(join(tmpdir(), "skill-reference-"));
   try {
     mkdirSync(join(cwd, "skills/productivity/ship-slice"), { recursive: true });
-    writeFileSync(join(cwd, "skills/productivity/README.md"), "# Productivity\n\nHandwritten introduction.\n");
+    writeFileSync(join(cwd, "skills/productivity/README.md"), "# Productivity\n\nHandwritten introduction.  ");
     writeFileSync(
       join(cwd, "skills/productivity/ship-slice/SKILL.md"),
       "---\nname: ship-slice\ndescription: Ship a slice safely. Use when delivering work.\n---\n",
@@ -76,9 +76,37 @@ test("updates an existing category README through the CLI", () => {
 
     expect(result.exitCode).toBe(0);
     expect(readFileSync(join(cwd, "skills/productivity/README.md"), "utf8")).toBe(
-      "# Productivity\n\nHandwritten introduction.\n\n" +
+      "# Productivity\n\nHandwritten introduction.  \n\n" +
         "<!-- BEGIN GENERATED SKILL REFERENCE -->\n" +
         "- **[ship-slice](./ship-slice/SKILL.md)** — Ship a slice safely.\n" +
+        "<!-- END GENERATED SKILL REFERENCE -->\n",
+    );
+  } finally {
+    rmSync(cwd, { recursive: true, force: true });
+  }
+});
+
+test("includes root-level skills in the Misc category README", () => {
+  const cwd = mkdtempSync(join(tmpdir(), "skill-reference-"));
+  try {
+    mkdirSync(join(cwd, "skills/misc/bro"), { recursive: true });
+    mkdirSync(join(cwd, "skills/hitl-handoff"), { recursive: true });
+    writeFileSync(join(cwd, "skills/misc/README.md"), "# Misc\n");
+    writeFileSync(
+      join(cwd, "skills/misc/bro/SKILL.md"),
+      "---\nname: bro\ndescription: Restate a message. Use when simplifying.\n---\n",
+    );
+    writeFileSync(
+      join(cwd, "skills/hitl-handoff/SKILL.md"),
+      "---\nname: hitl-handoff\ndescription: Hand work to a human. Use when blocked.\n---\n",
+    );
+
+    expect(Bun.spawnSync([process.execPath, SCRIPT], { cwd }).exitCode).toBe(0);
+    expect(readFileSync(join(cwd, "skills/misc/README.md"), "utf8")).toBe(
+      "# Misc\n\n" +
+        "<!-- BEGIN GENERATED SKILL REFERENCE -->\n" +
+        "- **[hitl-handoff](../hitl-handoff/SKILL.md)** — Hand work to a human.\n" +
+        "- **[bro](./bro/SKILL.md)** — Restate a message.\n" +
         "<!-- END GENERATED SKILL REFERENCE -->\n",
     );
   } finally {
@@ -161,11 +189,12 @@ test("check mode reports a stale category README", () => {
   }
 });
 
-test("does not manage a README inside a skill directory", () => {
+test("does not manage READMEs inside a skill directory", () => {
   const cwd = mkdtempSync(join(tmpdir(), "skill-reference-"));
   try {
-    mkdirSync(join(cwd, "skills/productivity/commit"), { recursive: true });
+    mkdirSync(join(cwd, "skills/productivity/commit/docs"), { recursive: true });
     writeFileSync(join(cwd, "skills/productivity/commit/README.md"), "# Commit internals\n");
+    writeFileSync(join(cwd, "skills/productivity/commit/docs/README.md"), "# Commit examples\n");
     writeFileSync(
       join(cwd, "skills/productivity/commit/SKILL.md"),
       "---\nname: commit\ndescription: Commit the work. Use after validation.\n---\n",
@@ -176,7 +205,33 @@ test("does not manage a README inside a skill directory", () => {
     expect({
       exitCode: result.exitCode,
       readme: readFileSync(join(cwd, "skills/productivity/commit/README.md"), "utf8"),
-    }).toEqual({ exitCode: 0, readme: "# Commit internals\n" });
+      nestedReadme: readFileSync(join(cwd, "skills/productivity/commit/docs/README.md"), "utf8"),
+    }).toEqual({ exitCode: 0, readme: "# Commit internals\n", nestedReadme: "# Commit examples\n" });
+  } finally {
+    rmSync(cwd, { recursive: true, force: true });
+  }
+});
+
+test("replaces a generated section with frontmatter text literally", () => {
+  const cwd = mkdtempSync(join(tmpdir(), "skill-reference-"));
+  try {
+    mkdirSync(join(cwd, "skills/productivity/cash"), { recursive: true });
+    writeFileSync(
+      join(cwd, "skills/productivity/README.md"),
+      "# Productivity\n\n<!-- BEGIN GENERATED SKILL REFERENCE -->\nOld reference.\n<!-- END GENERATED SKILL REFERENCE -->\n",
+    );
+    writeFileSync(
+      join(cwd, "skills/productivity/cash/SKILL.md"),
+      '---\nname: "cash-$$-$&"\ndescription: "Keep $$ and $& literally. Use when testing replacements."\n---\n',
+    );
+
+    expect(Bun.spawnSync([process.execPath, SCRIPT], { cwd }).exitCode).toBe(0);
+    expect(readFileSync(join(cwd, "skills/productivity/README.md"), "utf8")).toBe(
+      "# Productivity\n\n" +
+        "<!-- BEGIN GENERATED SKILL REFERENCE -->\n" +
+        "- **[cash-$$-$&](./cash/SKILL.md)** — Keep $$ and $& literally.\n" +
+        "<!-- END GENERATED SKILL REFERENCE -->\n",
+    );
   } finally {
     rmSync(cwd, { recursive: true, force: true });
   }

@@ -22,32 +22,40 @@ BOT="chatgpt-codex-connector[bot]"
 POLLS="${POLLS:-30}"
 INTERVAL="${INTERVAL:-60}"
 
+line_count() {
+  awk 'NF { count++ } END { print count + 0 }'
+}
+
 comment_reactions() {
   local content="$1" id
-  gh api --paginate --slurp "repos/$REPO/issues/$PR/comments" \
-    --jq ".[][] | select(.created_at > \"$SINCE\") | .id" 2>/dev/null | while read -r id; do
+  gh api --paginate "repos/$REPO/issues/$PR/comments" \
+    --jq ".[] | select(.created_at >= \"$SINCE\") | .id" 2>/dev/null | while read -r id; do
       [ -n "$id" ] || continue
-      gh api --paginate --slurp "repos/$REPO/issues/comments/$id/reactions" \
-        --jq ".[][] | select(.user.login==\"$BOT\" and .content==\"$content\" and .created_at > \"$SINCE\") | {content, created_at}" 2>/dev/null || true
+      gh api --paginate "repos/$REPO/issues/comments/$id/reactions" \
+        --jq ".[] | select(.user.login==\"$BOT\" and .content==\"$content\" and .created_at > \"$SINCE\") | {content, created_at}" 2>/dev/null || true
     done
 }
 
 count_reactions() {
-  local content="$1" pr_reactions comment_reaction_count
-  pr_reactions=$(gh api --paginate --slurp "repos/$REPO/issues/$PR/reactions" \
-    --jq "[.[][] | select(.user.login==\"$BOT\" and .content==\"$content\" and .created_at > \"$SINCE\")] | length" 2>/dev/null || echo 0)
+  local content="$1" matches pr_reactions comment_reaction_count
+  matches=$(gh api --paginate "repos/$REPO/issues/$PR/reactions" \
+    --jq ".[] | select(.user.login==\"$BOT\" and .content==\"$content\" and .created_at > \"$SINCE\") | .id" 2>/dev/null || true)
+  pr_reactions=$(printf '%s\n' "$matches" | line_count)
   comment_reaction_count=$(comment_reactions "$content" | wc -l | tr -d ' ')
   echo $(( pr_reactions + comment_reaction_count ))
 }
 
 count_new() {
-  local reviews comments inline reactions
-  reviews=$(gh api --paginate --slurp "repos/$REPO/pulls/$PR/reviews" \
-    --jq "[.[][] | select(.user.login==\"$BOT\" and .submitted_at > \"$SINCE\")] | length" 2>/dev/null || echo 0)
-  comments=$(gh api --paginate --slurp "repos/$REPO/issues/$PR/comments" \
-    --jq "[.[][] | select(.user.login==\"$BOT\" and .created_at > \"$SINCE\")] | length" 2>/dev/null || echo 0)
-  inline=$(gh api --paginate --slurp "repos/$REPO/pulls/$PR/comments" \
-    --jq "[.[][] | select(.user.login==\"$BOT\" and .created_at > \"$SINCE\")] | length" 2>/dev/null || echo 0)
+  local reviews comments inline reactions matches
+  matches=$(gh api --paginate "repos/$REPO/pulls/$PR/reviews" \
+    --jq ".[] | select(.user.login==\"$BOT\" and .submitted_at > \"$SINCE\") | .id" 2>/dev/null || true)
+  reviews=$(printf '%s\n' "$matches" | line_count)
+  matches=$(gh api --paginate "repos/$REPO/issues/$PR/comments" \
+    --jq ".[] | select(.user.login==\"$BOT\" and .created_at > \"$SINCE\") | .id" 2>/dev/null || true)
+  comments=$(printf '%s\n' "$matches" | line_count)
+  matches=$(gh api --paginate "repos/$REPO/pulls/$PR/comments" \
+    --jq ".[] | select(.user.login==\"$BOT\" and .created_at > \"$SINCE\") | .id" 2>/dev/null || true)
+  inline=$(printf '%s\n' "$matches" | line_count)
   reactions=$(count_reactions "+1")
   echo $(( reviews + comments + inline + reactions ))
 }
@@ -55,17 +63,17 @@ count_new() {
 print_findings() {
   echo "=== Codex responded on $REPO#$PR (since $SINCE) ==="
   echo "--- Review summaries (state / body) ---"
-  gh api --paginate --slurp "repos/$REPO/pulls/$PR/reviews" \
-    --jq ".[][] | select(.user.login==\"$BOT\" and .submitted_at > \"$SINCE\") | {state, submitted_at, body}" 2>/dev/null || true
+  gh api --paginate "repos/$REPO/pulls/$PR/reviews" \
+    --jq ".[] | select(.user.login==\"$BOT\" and .submitted_at > \"$SINCE\") | {state, submitted_at, body}" 2>/dev/null || true
   echo "--- Inline findings (path:line) ---"
-  gh api --paginate --slurp "repos/$REPO/pulls/$PR/comments" \
-    --jq ".[][] | select(.user.login==\"$BOT\" and .created_at > \"$SINCE\") | {path, line, body}" 2>/dev/null || true
+  gh api --paginate "repos/$REPO/pulls/$PR/comments" \
+    --jq ".[] | select(.user.login==\"$BOT\" and .created_at > \"$SINCE\") | {path, line, body}" 2>/dev/null || true
   echo "--- Issue comments ---"
-  gh api --paginate --slurp "repos/$REPO/issues/$PR/comments" \
-    --jq ".[][] | select(.user.login==\"$BOT\" and .created_at > \"$SINCE\") | {created_at, body}" 2>/dev/null || true
+  gh api --paginate "repos/$REPO/issues/$PR/comments" \
+    --jq ".[] | select(.user.login==\"$BOT\" and .created_at > \"$SINCE\") | {created_at, body}" 2>/dev/null || true
   echo "--- Clean-review reactions ---"
-  gh api --paginate --slurp "repos/$REPO/issues/$PR/reactions" \
-    --jq ".[][] | select(.user.login==\"$BOT\" and .content==\"+1\" and .created_at > \"$SINCE\") | {content, created_at}" 2>/dev/null || true
+  gh api --paginate "repos/$REPO/issues/$PR/reactions" \
+    --jq ".[] | select(.user.login==\"$BOT\" and .content==\"+1\" and .created_at > \"$SINCE\") | {content, created_at}" 2>/dev/null || true
   comment_reactions "+1"
 }
 

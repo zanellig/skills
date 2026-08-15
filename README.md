@@ -29,3 +29,5 @@ See [skills/README.md](./skills/README.md) for the full list, generated from eac
 ```sh
 bun scripts/gen-reference.mjs
 ```
+
+The same command updates generated skill-reference sections in existing category and subcategory `README.md` files. It preserves content outside the generated markers and does not create new category READMEs.

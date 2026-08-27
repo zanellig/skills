@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# Keeps the generated skill reference in sync so CI's --check never fails on a
+# forgotten regeneration. Enable once per clone:
+#   git config core.hooksPath .githooks
+set -eu
+
+bun scripts/gen-reference.mjs
+
+# Stage only the README files the generator just rewrote; never touch anything
+# else the commit deliberately left out.
+git diff --name-only -- skills \
+  | { grep 'README\.md$' || true; } \
+  | xargs -r git add --

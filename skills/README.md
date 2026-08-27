@@ -12,6 +12,7 @@
 ## Productivity
 
 - **[commit](./productivity/commit/SKILL.md)** — Commit the current changes with a descriptive message.
+- **[loop](./productivity/loop/SKILL.md)** — Claude Code's original /loop skill.
 - **[refined-loop](./productivity/refined-loop/SKILL.md)** — Schedule a prompt or slash command to run on a repeating schedule — every N minutes/hours/days, or at a fixed time of day.
 - **[ship-slice](./productivity/ship-slice/SKILL.md)** — Drive a slice from implementation through Codex review rounds to a merged PR.
 

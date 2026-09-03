@@ -36,7 +36,7 @@ end-to-end piece of a larger spec/PRD that ships on its own. Reviews come from t
 
 ## Notes
 
-- **One activation per round:** Opening the PR activates round 1; one `@codex review` comment activates each later round. Never send an additional review request for a round that is already pending.
+- **One activation per round:** Opening the PR activates round 1; one `@codex review` comment activates each later round. A round stays pending while the bot's 👀 reaction stands, whether the waiter reports it (exit 2) or you spot it in `gh pr view`. Wait for that reaction to resolve into a review, comment, or 👍. A second request re-reviews the same commit and burns usage limits on duplicate findings.
 - Run `wait-for-codex.sh` as a background command; its `sleep` loop would otherwise block the turn.
 - Codex may answer as a PR review, a PR issue-comment, inline PR comments, or a 👍 reaction on the PR or review-request comment — the script checks all five. Filter by `user.login == "chatgpt-codex-connector[bot]"` and a `SINCE` timestamp.
 - Requires the GitHub CLI (`gh`) authenticated for the repo, with the Codex GitHub app installed.

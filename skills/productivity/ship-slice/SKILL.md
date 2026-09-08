@@ -16,7 +16,7 @@ end-to-end piece of a larger spec/PRD that ships on its own. Reviews come from t
 
 2. **Implement to acceptance criteria, with tests.** Every behavior change gets a test. Run the project's test/check suite and make it green. Format before committing.
 
-3. **Commit and push.** Commit by scope with conventional-commit messages. Push with an **explicit remote and branch** — `git push origin <branch>`. A *bare* `git push` whose output is piped (e.g. `git push 2>&1 | tail`) is silently dropped by the rtk layer — no output, exit 0 — even without typing the `rtk` prefix (verified 2026-07-20; it cost PR #43 two commits). After any push that matters, verify it landed: `git ls-remote origin refs/heads/<branch>` must equal `git rev-parse HEAD`.
+3. **Commit and push.** Commit by scope with conventional-commit messages. Push with an explicit remote and branch, `git push origin <branch>`. After any push that matters, verify it landed: `git ls-remote origin refs/heads/<branch>` must equal `git rev-parse HEAD`.
 
 4. **Open the PR.** Immediately before running `gh pr create`, capture `SINCE=$(date -u +%Y-%m-%dT%H:%M:%SZ)`. Title it `Slice <id>: <summary>`. The body references the parent spec and the issues it closes. If an applicable policy opens the PR as a draft, creation does not activate review; capture a new `SINCE` immediately before the authorized transition to ready.
 

@@ -3,7 +3,6 @@
 Useful workflow helpers that do not fit a tighter category.
 
 <!-- BEGIN GENERATED SKILL REFERENCE -->
-- **[hitl-handoff](../hitl-handoff/SKILL.md)** — Post a standardized human-in-the-loop handoff comment on a PR or issue when agent work is finished but acceptance criteria still depend on a human.
 - **[bro](./bro/SKILL.md)** — Restate the last message in plain human language, with no jargon.
 - **[bump](./bump/SKILL.md)** — Create and push semver version tags.
 - **[sudo-escalation](./sudo-escalation/SKILL.md)** — Use whenever a command needs root privileges — a `sudo` command, a write outside the user's home, a package install or removal, or a "permission denied" failure.

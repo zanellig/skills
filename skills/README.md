@@ -4,7 +4,6 @@
 
 ## Misc
 
-- **[hitl-handoff](./hitl-handoff/SKILL.md)** — Post a standardized human-in-the-loop handoff comment on a PR or issue when agent work is finished but acceptance criteria still depend on a human.
 - **[bro](./misc/bro/SKILL.md)** — Restate the last message in plain human language, with no jargon.
 - **[bump](./misc/bump/SKILL.md)** — Create and push semver version tags.
 - **[sudo-escalation](./misc/sudo-escalation/SKILL.md)** — Use whenever a command needs root privileges — a `sudo` command, a write outside the user's home, a package install or removal, or a "permission denied" failure.
@@ -13,6 +12,7 @@
 ## Productivity
 
 - **[commit](./productivity/commit/SKILL.md)** — Commit the current changes with a descriptive message.
+- **[hitl-handoff](./productivity/hitl-handoff/SKILL.md)** — Post a handoff comment on a PR or issue when agent work is done but acceptance criteria still need a human.
 - **[loop](./productivity/loop/SKILL.md)** — Claude Code's original /loop skill.
 - **[refined-loop](./productivity/refined-loop/SKILL.md)** — Schedule a prompt or slash command to run on a repeating schedule — every N minutes/hours/days, or at a fixed time of day.
 - **[ship-slice](./productivity/ship-slice/SKILL.md)** — Drive a slice from implementation through Codex review rounds to a merged PR.

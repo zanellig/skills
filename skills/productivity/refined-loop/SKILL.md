@@ -1,6 +1,6 @@
 ---
 name: refined-loop
-description: Schedule a prompt or slash command to run on a repeating schedule — every N minutes/hours/days, or at a fixed time of day. Use when the user wants a recurring task, a poll for status, or something run repeatedly on an interval or at a set hour ("check the deploy every 5 minutes", "run X every morning at 6"). Do NOT invoke for one-off tasks.
+description: Schedule a prompt or slash command to run on a repeating schedule — every N minutes/hours/days, or at a fixed time of day. Use when the user wants a recurring task, a poll for status, or something run repeatedly on an interval or at a set hour ("check the deploy every 5 minutes", "run X every morning at 6").
 argument-hint: "[interval or time] <prompt>"
 ---
 

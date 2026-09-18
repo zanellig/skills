@@ -43,7 +43,7 @@ Work that splits into independent slices goes to parallel subagents instead of o
 
 ## Isolation: one worktree per agent
 
-Parallel agents sharing one working tree overwrite each other, and the cost lands as reverted work. Give each agent its own `git worktree`. That replaces every instruction about leaving other agents' edits alone.
+Parallel agents sharing one working tree overwrite each other, and the cost lands as reverted work. Give each agent its own `git worktree`. Put it at `.worktrees/<branch>` inside the repository, and keep it out of status with `.git/info/exclude`. That replaces every instruction about leaving other agents' edits alone.
 
 ## Finishing: run to the end of the brief
 

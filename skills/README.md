@@ -12,6 +12,7 @@
 ## Productivity
 
 - **[commit](./productivity/commit/SKILL.md)** — Commit the current changes with a descriptive message.
+- **[geze-mode](./productivity/geze-mode/SKILL.md)** — Geze's working style for non-trivial tasks.
 - **[hitl-handoff](./productivity/hitl-handoff/SKILL.md)** — Post a handoff comment on a PR or issue when agent work is done but acceptance criteria still need a human.
 - **[loop](./productivity/loop/SKILL.md)** — Claude Code's original /loop skill.
 - **[refined-loop](./productivity/refined-loop/SKILL.md)** — Schedule a prompt or slash command to run on a repeating schedule — every N minutes/hours/days, or at a fixed time of day.

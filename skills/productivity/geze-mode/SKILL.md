@@ -38,7 +38,7 @@ Work that splits into independent slices goes to parallel subagents instead of o
 
 - Route bulk reading to subagents. The main thread holds findings, never raw payloads.
 - Give every worker its own writable path and a brief that stands alone: the goal, its slice, how to verify, what to report.
-- Pick worker models from `~/.agents/subagents/README.md`. Rate limits are the binding constraint, so many cheap workers and one strong synthesizer beat a panel of expensive workers.
+- Rate limits are the binding constraint, so many cheap workers and one strong synthesizer beat a panel of expensive workers.
 - Read the diff yourself. A worker's "done" is a claim on the ladder above, not a verdict.
 
 ## Isolation: one worktree per agent

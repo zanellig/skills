@@ -11,7 +11,7 @@
 
 ## Productivity
 
-- **[code-review-cheap](./productivity/code-review-cheap/SKILL.md)** — Review the changes since a fixed point (commit, branch, tag, or merge-base) along two axes: Standards (does the code follow this repo's documented coding standards?) and Spec (does the code match what the originating issue/spec asked for?).
+- **[code-review](./productivity/code-review/SKILL.md)** — Review the changes since a fixed point (commit, branch, tag, or merge-base) along two axes: Standards (does the code follow this repo's documented coding standards?) and Spec (does the code match what the originating issue/spec asked for?).
 - **[commit](./productivity/commit/SKILL.md)** — Commit the current changes with a descriptive message.
 - **[geze-mode](./productivity/geze-mode/SKILL.md)** — Geze's working style for non-trivial tasks.
 - **[hitl-handoff](./productivity/hitl-handoff/SKILL.md)** — Post a handoff comment on a PR or issue when agent work is done but acceptance criteria still need a human.

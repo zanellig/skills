@@ -57,7 +57,7 @@ Each smell reads *what it is* → *how to fix*; match it against the diff:
 
 ### 4. Spawn both sub-agents in parallel
 
-Both sub-agents run on a cheaper model than the one you are running. Read the routing guide at `~/.agents/subagents/README.md` and pick the tier it lists for cheap parallel workers in your own provider's family, at `high` effort. Name that model explicitly in the spawn call: left unset, each sub-agent inherits yours, which is the expensive way to run two bounded briefs. Both briefs below are bounded, fully specified, and checkable against the diff, which is the work that tier is for.
+Both sub-agents run on a cheaper model than the one you are running. Read the routing guide and pick the tier it lists for cheap parallel workers in your own provider's family, at `high` effort. Name that model explicitly in the spawn call: left unset, each sub-agent inherits yours, which is the expensive way to run two bounded briefs. Both briefs below are bounded, fully specified, and checkable against the diff, which is the work that tier is for.
 
 **Standards sub-agent prompt** should include:
 

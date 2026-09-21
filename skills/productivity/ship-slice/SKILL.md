@@ -16,19 +16,38 @@ end-to-end piece of a larger spec/PRD that ships on its own. Reviews come from t
 
 2. **Implement to acceptance criteria, with tests.** Every behavior change gets a test. Run the project's test/check suite and make it green. Format before committing.
 
-3. **Commit and push.** Commit by scope with conventional-commit messages. Push with an **explicit remote and branch** — `git push origin <branch>`. A *bare* `git push` whose output is piped (e.g. `git push 2>&1 | tail`) is silently dropped by the rtk layer — no output, exit 0 — even without typing the `rtk` prefix (verified 2026-07-20; it cost PR #43 two commits). After any push that matters, verify it landed: `git ls-remote origin refs/heads/<branch>` must equal `git rev-parse HEAD`.
+3. **Commit and push.** Commit by scope with conventional-commit messages. Push with an **explicit remote and branch** — `git push origin <branch>`. A *bare* `git push` whose output is piped (e.g. `git push 2>&1 | tail`) can be swallowed by a shell wrapper: no output, exit 0, nothing on the remote. After any push that matters, verify it landed: `git ls-remote origin refs/heads/<branch>` must equal `git rev-parse HEAD`.
 
 4. **Open the PR.** Immediately before running `gh pr create`, capture `SINCE=$(date -u +%Y-%m-%dT%H:%M:%SZ)`. Title it `Slice <id>: <summary>`. The body references the parent spec and the issues it closes. If an applicable policy opens the PR as a draft, creation does not activate review; capture a new `SINCE` immediately before the authorized transition to ready.
 
 5. **Treat PR creation as round 1.** Opening the PR activates the initial review. Do not also comment `@codex review`; that activates a second review of the same commit and can return duplicate findings. If the PR already existed when this process began, inspect existing Codex activity and resume from the latest round for the current remote head. If no response exists yet, capture a timestamp that precedes the pending review activity and wait for its response without requesting another review.
 
-6. **Wait for the response** (background command — it sleeps): `scripts/wait-for-codex.sh <n> "$SINCE"` prints the review body, inline findings (path:line), issue comments, or a clean-review 👍 reaction once Codex responds. It exits 0 on response, 1 when no response or pending signal appeared, and 2 when a fresh 👀 reaction shows that review is still in flight. A timeout is never zero findings. On exit 2, rerun the waiter with the same `SINCE`; do not recapture the timestamp or request another review.
+6. **Wait for the response** (background command — it sleeps): `scripts/wait-for-codex.sh <n> "$SINCE"` prints the commits Codex read, the review body, inline findings (path:line), issue comments, and any clean-review 👍. Act on the exit code, and keep the same `SINCE` for every rerun within a round:
 
-7. **Address every finding.** Fix each actionable finding. Add or update tests when the finding changes observable behavior or exposes a meaningful regression risk; do not add a regression test mechanically for every finding. A finding that appropriately requires no code change needs a substantive written justification in the next review request.
+   | Exit | Meaning | Do |
+   | --- | --- | --- |
+   | 0 | A genuine response arrived. | Go to step 7. |
+   | 1 | Timeout. A timeout is never zero findings. | Activate the next round (step 8). |
+   | 2 | A fresh 👀 means the review is in flight. | Rerun once. A second exit 2 means the reaction is stale, because the bot keeps it after a review finishes; treat that as exit 1. |
+   | 3 | The repo or PR could not be read. | Repair `gh` auth or the arguments, then rerun. |
+   | 4 | Codex posted a **notice** instead of a review (usage limit, missing environment). | Stop. Report the notice and hand off. |
 
-8. **Loop.** Capture `AUTO_SINCE=$(date -u +%Y-%m-%dT%H:%M:%SZ)`, then push fixes and verify the remote SHA as in step 3. Smart Trigger may or may not automatically review new commits, so run a bounded waiter from `AUTO_SINCE` before manually activating the next round. A response completes the round; exit 2 means an automatic review is pending, so rerun with the same timestamp. On exit 1, capture `SINCE=$(date -u +%Y-%m-%dT%H:%M:%SZ)` and post one pinned comment: `gh pr comment <n> --body "@codex review the latest fixes on commit <sha>: <what each finding's fix did or why no code change is appropriate>."` Codex reviews the commit as of request time, so always pin the SHA. The same SHA may be reviewed again only when the new request contains a substantive justification for a finding that requires no code change. Stop when a round returns zero new actionable findings or three rounds have completed. Only a received Codex response, including a clean-review 👍 reaction, completes a round. PR creation is round 1.
+   A notice means the round never ran, so the commit carries no review and the PR stays open. Requesting again reproduces the notice until the underlying limit clears.
 
-9. **CI green.** `gh pr checks <n>`. Fix reds and re-push before merging.
+7. **Address every finding, in its own thread.** Fix each actionable finding. Add or update tests when the finding changes observable behavior or exposes a meaningful regression risk; add a regression test where it earns its place, not once per finding. Answer each finding where it was raised — `gh api repos/<owner>/<repo>/pulls/comments/<id>/replies -f body="Fixed in <sha>: <what changed>"` — naming the fix commit, or the substantive reason the finding requires no code change. Then resolve the thread with the GraphQL `resolveReviewThread` mutation on its thread id. The reply is what carries the answer forward; a justification that lives only in the next review request leaves the finding open behind it.
+
+8. **Loop.** Capture `AUTO_SINCE=$(date -u +%Y-%m-%dT%H:%M:%SZ)`, then push fixes and verify the remote SHA as in step 3. An automatic review of new commits may or may not fire, so run the waiter from `AUTO_SINCE` (step 6) before activating the next round yourself. To activate one, capture `SINCE=$(date -u +%Y-%m-%dT%H:%M:%SZ)` and post one pinned comment: `gh pr comment <n> --body "@codex review the latest fixes on commit <sha>: <what each finding's fix did or why no code change is appropriate>."` Codex reviews the commit as of request time, so always pin the SHA. The same SHA may be reviewed again only when the new request contains a substantive justification for a finding that requires no code change. Stop when a round returns zero new actionable findings or three rounds have completed. Only a genuine Codex response completes a round. PR creation is round 1.
+
+   **Check which commit was reviewed.** The waiter prints the commits Codex read. When one differs from the SHA you pushed, Codex reviewed a stale commit and that round covered none of your fixes: re-request with the SHA pinned. That re-request answers a round that never happened, so it is not a duplicate activation.
+
+9. **CI green, threads closed.** `gh pr checks <n>`. Fix reds and re-push. Then confirm every Codex review thread is resolved, so the merge carries a fix or an answer for each finding:
+
+   ```bash
+   gh api graphql -f query='query($o:String!,$r:String!,$n:Int!){repository(owner:$o,name:$r){pullRequest(number:$n){
+     reviewThreads(first:100){nodes{isResolved path}}}}}' \
+     -f o=<owner> -f r=<repo> -F n=<n> \
+     --jq '.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved==false) | .path'
+   ```
 
 10. **Merge.** `gh pr merge <n> --merge --delete-branch` (swap `--squash` if the repo prefers it).
 
@@ -36,7 +55,8 @@ end-to-end piece of a larger spec/PRD that ships on its own. Reviews come from t
 
 ## Notes
 
-- **One activation per round:** Opening the PR activates round 1; one `@codex review` comment activates each later round. A round stays pending while the bot's 👀 reaction stands, whether the waiter reports it (exit 2) or you spot it in `gh pr view`. Wait for that reaction to resolve into a review, comment, or 👍. A second request re-reviews the same commit and burns usage limits on duplicate findings.
+- **One activation per round:** Opening the PR activates round 1; one `@codex review` comment activates each later round. A fresh 👀 reaction means a round is already running, whether the waiter reports it (exit 2) or you spot it in `gh pr view`; let it resolve into a review, comment, or 👍. The bot leaves the reaction in place afterwards, so an 👀 that outlives a full wait is stale rather than pending — step 6 bounds how long to believe it. A second request re-reviews the same commit and burns usage limits on duplicate findings.
 - Run `wait-for-codex.sh` as a background command; its `sleep` loop would otherwise block the turn.
-- Codex may answer as a PR review, a PR issue-comment, inline PR comments, or a 👍 reaction on the PR or review-request comment — the script checks all five. Filter by `user.login == "chatgpt-codex-connector[bot]"` and a `SINCE` timestamp.
+- Codex may answer as a PR review, inline PR comments, an issue comment, or a 👍 reaction on the PR — the script checks those four. Filter by `user.login == "chatgpt-codex-connector[bot]"` and a `SINCE` timestamp. **Every genuine response names the commit it read** (`Reviewed commit: <sha>`); a bot comment without that marker is a notice.
+- A 👍 lands on the PR itself, and GitHub keeps one reaction of each type per user, so a later clean round cannot always be seen there. The `Reviewed commit:` comment is the reliable clean-round signal.
 - Requires the GitHub CLI (`gh`) authenticated for the repo, with the Codex GitHub app installed.

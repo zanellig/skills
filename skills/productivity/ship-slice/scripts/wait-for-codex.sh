@@ -8,8 +8,10 @@
 #   [owner/repo] Default: current repo via `gh repo view`.
 #
 # Env: POLLS (default 30 iterations), INTERVAL (default 60s between polls).
-# Exits 0 once Codex responds (printing findings), 1 on timeout, or 2 when a
-# fresh eyes reaction shows that a review is still in flight after polling.
+# Exits 0 once Codex responds (printing the commits it read and the findings),
+# 1 on timeout, 2 when a fresh eyes reaction shows a review still in flight,
+# 3 when the repo or PR cannot be read, and 4 when Codex posted a notice
+# instead of a review, which means the round never ran.
 #
 # Run this as a BACKGROUND command — it sleeps between polls.
 set -euo pipefail
@@ -17,7 +19,14 @@ set -euo pipefail
 PR="${1:?usage: wait-for-codex.sh <pr> [since_iso] [owner/repo]}"
 SINCE="${2:-$(date -u -d '-2 minutes' +%Y-%m-%dT%H:%M:%SZ 2>/dev/null \
   || date -u -v-2M +%Y-%m-%dT%H:%M:%SZ)}"
-REPO="${3:-$(gh repo view --json nameWithOwner --jq .nameWithOwner)}"
+if ! REPO="${3:-$(gh repo view --json nameWithOwner --jq .nameWithOwner)}"; then
+  echo "ERROR: cannot resolve the repo. Run inside it or pass owner/repo." >&2
+  exit 3
+fi
+gh api "repos/$REPO/pulls/$PR" --jq .number >/dev/null 2>&1 || {
+  echo "ERROR: cannot read $REPO#$PR. Check gh auth and the PR number." >&2
+  exit 3
+}
 BOT="chatgpt-codex-connector[bot]"
 POLLS="${POLLS:-30}"
 INTERVAL="${INTERVAL:-60}"
@@ -26,23 +35,21 @@ line_count() {
   awk 'NF { count++ } END { print count + 0 }'
 }
 
-comment_reactions() {
-  local content="$1" id
+# Every genuine Codex response names the commit it read. A bot issue comment
+# without that marker is a notice (usage limit, missing environment), not a
+# review. $1 selects which of the two to return, $2 the field to emit.
+bot_comments() {
   gh api --paginate "repos/$REPO/issues/$PR/comments" \
-    --jq ".[] | select(.created_at >= \"$SINCE\") | .id" 2>/dev/null | while read -r id; do
-      [ -n "$id" ] || continue
-      gh api --paginate "repos/$REPO/issues/comments/$id/reactions" \
-        --jq ".[] | select(.user.login==\"$BOT\" and .content==\"$content\" and .created_at > \"$SINCE\") | {content, created_at}" 2>/dev/null || true
-    done
+    --jq ".[] | select(.user.login==\"$BOT\" and .created_at > \"$SINCE\"
+           and ((.body | test(\"Reviewed commit\")) == $1)) | .$2" 2>/dev/null || true
 }
 
 count_reactions() {
-  local content="$1" matches pr_reactions comment_reaction_count
+  local matches
   matches=$(gh api --paginate "repos/$REPO/issues/$PR/reactions" \
-    --jq ".[] | select(.user.login==\"$BOT\" and .content==\"$content\" and .created_at > \"$SINCE\") | .id" 2>/dev/null || true)
-  pr_reactions=$(printf '%s\n' "$matches" | line_count)
-  comment_reaction_count=$(comment_reactions "$content" | wc -l | tr -d ' ')
-  echo $(( pr_reactions + comment_reaction_count ))
+    --jq ".[] | select(.user.login==\"$BOT\" and .content==\"$1\" and .created_at > \"$SINCE\") | .id" \
+    2>/dev/null || true)
+  printf '%s\n' "$matches" | line_count
 }
 
 count_new() {
@@ -50,8 +57,7 @@ count_new() {
   matches=$(gh api --paginate "repos/$REPO/pulls/$PR/reviews" \
     --jq ".[] | select(.user.login==\"$BOT\" and .submitted_at > \"$SINCE\") | .id" 2>/dev/null || true)
   reviews=$(printf '%s\n' "$matches" | line_count)
-  matches=$(gh api --paginate "repos/$REPO/issues/$PR/comments" \
-    --jq ".[] | select(.user.login==\"$BOT\" and .created_at > \"$SINCE\") | .id" 2>/dev/null || true)
+  matches=$(bot_comments true id)
   comments=$(printf '%s\n' "$matches" | line_count)
   matches=$(gh api --paginate "repos/$REPO/pulls/$PR/comments" \
     --jq ".[] | select(.user.login==\"$BOT\" and .created_at > \"$SINCE\") | .id" 2>/dev/null || true)
@@ -62,6 +68,10 @@ count_new() {
 
 print_findings() {
   echo "=== Codex responded on $REPO#$PR (since $SINCE) ==="
+  echo "--- Commits Codex read (compare against the SHA you pushed) ---"
+  gh api --paginate "repos/$REPO/pulls/$PR/reviews" \
+    --jq ".[] | select(.user.login==\"$BOT\" and .submitted_at > \"$SINCE\") | .commit_id" 2>/dev/null || true
+  bot_comments true body | { grep -i 'reviewed commit' || true; }
   echo "--- Review summaries (state / body) ---"
   gh api --paginate "repos/$REPO/pulls/$PR/reviews" \
     --jq ".[] | select(.user.login==\"$BOT\" and .submitted_at > \"$SINCE\") | {state, submitted_at, body}" 2>/dev/null || true
@@ -69,18 +79,22 @@ print_findings() {
   gh api --paginate "repos/$REPO/pulls/$PR/comments" \
     --jq ".[] | select(.user.login==\"$BOT\" and .created_at > \"$SINCE\") | {path, line, body}" 2>/dev/null || true
   echo "--- Issue comments ---"
-  gh api --paginate "repos/$REPO/issues/$PR/comments" \
-    --jq ".[] | select(.user.login==\"$BOT\" and .created_at > \"$SINCE\") | {created_at, body}" 2>/dev/null || true
+  bot_comments true body
   echo "--- Clean-review reactions ---"
   gh api --paginate "repos/$REPO/issues/$PR/reactions" \
     --jq ".[] | select(.user.login==\"$BOT\" and .content==\"+1\" and .created_at > \"$SINCE\") | {content, created_at}" 2>/dev/null || true
-  comment_reactions "+1"
 }
 
 for _ in $(seq 1 "$POLLS"); do
   if [ "$(count_new)" -gt 0 ]; then
     print_findings
     exit 0
+  fi
+  notice=$(bot_comments false body)
+  if [ -n "$notice" ]; then
+    echo "BLOCKED: Codex posted a notice instead of a review on $REPO#$PR (since $SINCE)"
+    printf '%s\n' "$notice"
+    exit 4
   fi
   sleep "$INTERVAL"
 done

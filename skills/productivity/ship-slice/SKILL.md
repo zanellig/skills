@@ -45,9 +45,9 @@ end-to-end piece of a larger spec/PRD that ships on its own. Reviews come from t
    ```bash
    gh api graphql --paginate \
      -f query='query($o:String!,$r:String!,$n:Int!,$endCursor:String){repository(owner:$o,name:$r){pullRequest(number:$n){
-       reviewThreads(first:100,after:$endCursor){pageInfo{hasNextPage endCursor} nodes{isResolved path}}}}}' \
+       reviewThreads(first:100,after:$endCursor){pageInfo{hasNextPage endCursor} nodes{id isResolved path}}}}}' \
      -f o=<owner> -f r=<repo> -F n=<n> \
-     --jq '.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved==false) | .path'
+     --jq '.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved==false) | "\(.id) \(.path)"'
    ```
 
 10. **Merge.** `gh pr merge <n> --merge --delete-branch` (swap `--squash` if the repo prefers it).

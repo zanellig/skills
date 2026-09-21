@@ -34,7 +34,7 @@ end-to-end piece of a larger spec/PRD that ships on its own. Reviews come from t
 
    A notice means the round never ran, so the commit carries no review and the PR stays open. Requesting again reproduces the notice until the underlying limit clears.
 
-7. **Address every finding, in its own thread.** Fix each actionable finding. Add or update tests when the finding changes observable behavior or exposes a meaningful regression risk; add a regression test where it earns its place, not once per finding. Answer each finding where it was raised — `gh api repos/<owner>/<repo>/pulls/comments/<id>/replies -f body="Fixed in <sha>: <what changed>"` — naming the fix commit, or the substantive reason the finding requires no code change. Then resolve the thread with the GraphQL `resolveReviewThread` mutation on its thread id. The reply is what carries the answer forward; a justification that lives only in the next review request leaves the finding open behind it.
+7. **Address every finding, in its own thread.** Fix each actionable finding. Add or update tests when the finding changes observable behavior or exposes a meaningful regression risk; add a regression test where it earns its place, not once per finding. Answer each finding where it was raised — `gh api repos/<owner>/<repo>/pulls/<n>/comments/<id>/replies -f body="Fixed in <sha>: <what changed>"` — naming the fix commit, or the substantive reason the finding requires no code change. Then resolve the thread with the GraphQL `resolveReviewThread` mutation on its thread id. The reply is what carries the answer forward; a justification that lives only in the next review request leaves the finding open behind it.
 
 8. **Loop.** Capture `AUTO_SINCE=$(date -u +%Y-%m-%dT%H:%M:%SZ)`, then push fixes and verify the remote SHA as in step 3. An automatic review of new commits may or may not fire, so run the waiter from `AUTO_SINCE` (step 6) before activating the next round yourself. To activate one, capture `SINCE=$(date -u +%Y-%m-%dT%H:%M:%SZ)` and post one pinned comment: `gh pr comment <n> --body "@codex review the latest fixes on commit <sha>: <what each finding's fix did or why no code change is appropriate>."` Codex reviews the commit as of request time, so always pin the SHA. The same SHA may be reviewed again only when the new request contains a substantive justification for a finding that requires no code change. Stop when a round returns zero new actionable findings or three rounds have completed. Only a genuine Codex response completes a round. PR creation is round 1.
 
@@ -43,8 +43,9 @@ end-to-end piece of a larger spec/PRD that ships on its own. Reviews come from t
 9. **CI green, threads closed.** `gh pr checks <n>`. Fix reds and re-push. Then confirm every Codex review thread is resolved, so the merge carries a fix or an answer for each finding:
 
    ```bash
-   gh api graphql -f query='query($o:String!,$r:String!,$n:Int!){repository(owner:$o,name:$r){pullRequest(number:$n){
-     reviewThreads(first:100){nodes{isResolved path}}}}}' \
+   gh api graphql --paginate \
+     -f query='query($o:String!,$r:String!,$n:Int!,$endCursor:String){repository(owner:$o,name:$r){pullRequest(number:$n){
+       reviewThreads(first:100,after:$endCursor){pageInfo{hasNextPage endCursor} nodes{isResolved path}}}}}' \
      -f o=<owner> -f r=<repo> -F n=<n> \
      --jq '.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved==false) | .path'
    ```

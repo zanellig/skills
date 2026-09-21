@@ -52,6 +52,19 @@ count_reactions() {
   printf '%s\n' "$matches" | line_count
 }
 
+# The bot acknowledges a round with an eyes reaction on the PR, or on the
+# comment that activated it. Runs once after the wait expires, so the per
+# comment lookup costs nothing during polling.
+pending_on_comments() {
+  local ids id
+  ids=$(gh api --paginate "repos/$REPO/issues/$PR/comments" --jq '.[].id' 2>/dev/null || true)
+  for id in $ids; do
+    gh api --paginate "repos/$REPO/issues/comments/$id/reactions" \
+      --jq ".[] | select(.user.login==\"$BOT\" and .content==\"eyes\" and .created_at > \"$SINCE\") | .id" \
+      2>/dev/null || true
+  done
+}
+
 count_new() {
   local reviews comments inline reactions matches
   matches=$(gh api --paginate "repos/$REPO/pulls/$PR/reviews" \
@@ -69,9 +82,13 @@ count_new() {
 print_findings() {
   echo "=== Codex responded on $REPO#$PR (since $SINCE) ==="
   echo "--- Commits Codex read (compare against the SHA you pushed) ---"
-  gh api --paginate "repos/$REPO/pulls/$PR/reviews" \
-    --jq ".[] | select(.user.login==\"$BOT\" and .submitted_at > \"$SINCE\") | .commit_id" 2>/dev/null || true
-  bot_comments true body | { grep -i 'reviewed commit' || true; }
+  {
+    gh api --paginate "repos/$REPO/pulls/$PR/reviews" \
+      --jq ".[] | select(.user.login==\"$BOT\" and .submitted_at > \"$SINCE\") | .commit_id" 2>/dev/null || true
+    gh api --paginate "repos/$REPO/pulls/$PR/comments" \
+      --jq ".[] | select(.user.login==\"$BOT\" and .created_at > \"$SINCE\") | .commit_id" 2>/dev/null || true
+    bot_comments true body | { grep -io 'reviewed commit.*' || true; }
+  } | sort -u
   echo "--- Review summaries (state / body) ---"
   gh api --paginate "repos/$REPO/pulls/$PR/reviews" \
     --jq ".[] | select(.user.login==\"$BOT\" and .submitted_at > \"$SINCE\") | {state, submitted_at, body}" 2>/dev/null || true
@@ -99,7 +116,7 @@ for _ in $(seq 1 "$POLLS"); do
   sleep "$INTERVAL"
 done
 
-if [ "$(count_reactions "eyes")" -gt 0 ]; then
+if [ "$(count_reactions "eyes")" -gt 0 ] || [ -n "$(pending_on_comments)" ]; then
   echo "PENDING: Codex review is in flight on $REPO#$PR (since $SINCE)"
   exit 2
 fi

@@ -12,7 +12,7 @@ const NOTICE = "You have reached your Codex usage limits for code reviews.";
 // Stubs `gh` so each query the waiter makes answers from one scenario. The bot
 // issue-comment query splits on whether the body names a reviewed commit, so
 // the stub matches the `== true` / `== false` jq the script builds.
-function runWaiter({ review, response, notice, thumbsUp, eyes, prReadable = true } = {}) {
+function runWaiter({ review, inline, response, notice, thumbsUp, eyes, commentEyes, prReadable = true } = {}) {
   const bin = mkdtempSync(join(tmpdir(), "wait-for-codex-"));
   const gh = join(bin, "gh");
   const emit = (on, text) => (on ? `echo '${text}'` : ":");
@@ -27,9 +27,11 @@ esac
 case "$*" in
   *"pulls/3 "*) ${prReadable ? "echo 3" : "exit 1"} ;;
   *pulls/3/reviews*) ${emit(review, '{"state":"COMMENTED","commit_id":"abc1234567"}')} ;;
-  *pulls/3/comments*) : ;;
+  *pulls/3/comments*) ${emit(inline, '{"path":"a.ts","line":1,"commit_id":"def7654321"}')} ;;
   *issues/3/comments*"== true"*) ${emit(response, RESPONSE)} ;;
   *issues/3/comments*"== false"*) ${emit(notice, NOTICE)} ;;
+  *issues/3/comments*) ${emit(commentEyes, "42")} ;;
+  *issues/comments/42/reactions*) ${emit(commentEyes, "77")} ;;
   *issues/3/reactions*eyes*) ${emit(eyes, "77")} ;;
   *issues/3/reactions*"+1"*) ${emit(thumbsUp, '{"content":"+1","created_at":"2026-08-15T22:13:52Z"}')} ;;
 esac
@@ -88,8 +90,22 @@ test("no fresh Codex response still times out", () => {
   expect(result.stdout.toString()).toContain("TIMEOUT: no Codex response");
 });
 
+test("an inline-only response reports the commit that finding was raised against", () => {
+  const result = runWaiter({ inline: true });
+
+  expect(result.exitCode).toBe(0);
+  expect(result.stdout.toString()).toContain("def7654321");
+});
+
 test("a fresh eyes reaction reports an in-flight review after the wait expires", () => {
   const result = runWaiter({ eyes: true });
+
+  expect(result.exitCode).toBe(2);
+  expect(result.stdout.toString()).toContain("PENDING: Codex review is in flight");
+});
+
+test("an eyes reaction on the activating comment also reports an in-flight review", () => {
+  const result = runWaiter({ commentEyes: true });
 
   expect(result.exitCode).toBe(2);
   expect(result.stdout.toString()).toContain("PENDING: Codex review is in flight");

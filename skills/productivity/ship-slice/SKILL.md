@@ -18,7 +18,7 @@ end-to-end piece of a larger spec/PRD that ships on its own. Reviews come from t
 
 3. **Commit and push.** Commit by scope with conventional-commit messages. Push with an **explicit remote and branch** — `git push origin <branch>`. A *bare* `git push` whose output is piped (e.g. `git push 2>&1 | tail`) can be swallowed by a shell wrapper: no output, exit 0, nothing on the remote. After any push that matters, verify it landed: `git ls-remote origin refs/heads/<branch>` must equal `git rev-parse HEAD`.
 
-4. **Confirm the review trigger.** Codex activates reviews on one of three settings, set per account and overridable per repo: **On PR open**, **On every push**, or **Smart detect**. Which one is in force decides whether step 9 ever posts `@codex review`, and no API exposes it. When the repo's agents file already records it, use that. Otherwise ask the user, then write one line under a `Codex Code review settings` heading in `AGENTS.md` — or `CLAUDE.md` when the repo has no `AGENTS.md` — and tell the user you added it. Say nothing when it was already recorded. Nest the heading one level below an existing code-review section, otherwise add it at `##`:
+4. **Confirm the review trigger.** Codex activates reviews on one of three settings, set per account and overridable per repo: **On PR open**, **On every push**, or **Smart detect**. Which one is in force decides whether step 9 ever posts `@codex review`, and no API exposes it. When the repo's agents file already records it, use that. Otherwise ask the user, then write one line under a `Codex Code review settings` heading in `AGENTS.md` — or `CLAUDE.md` when the repo has no `AGENTS.md`. Tell the user only when you added the line, so an already-recorded setting passes in silence. Nest the heading one level below an existing code-review section, otherwise add it at `##`:
 
    ```markdown
    ## Codex Code review settings
@@ -28,7 +28,7 @@ end-to-end piece of a larger spec/PRD that ships on its own. Reviews come from t
 
 5. **Open the PR.** Immediately before running `gh pr create`, capture `SINCE=$(date -u +%Y-%m-%dT%H:%M:%SZ)`. Title it `Slice <id>: <summary>`. The body references the parent spec and names the issues it closes with a closing keyword, so merging closes them. If an applicable policy opens the PR as a draft, creation does not activate review; capture a new `SINCE` immediately before the authorized transition to ready.
 
-6. **Treat PR creation as round 1.** Opening the PR activates the initial review. Do not also comment `@codex review`; that activates a second review of the same commit and can return duplicate findings. If the PR already existed when this process began, inspect existing Codex activity and resume from the latest round for the current remote head. If no response exists yet, capture a timestamp that precedes the pending review activity and wait for its response without requesting another review.
+6. **Treat PR creation as round 1.** Opening the PR activates the initial review, so let that one run. A second `@codex review` comment re-reviews the same commit and returns duplicate findings against your usage limits. If the PR already existed when this process began, inspect existing Codex activity and resume from the latest round for the current remote head. If no response exists yet, capture a timestamp that precedes the pending review activity and wait for its response without requesting another review.
 
 7. **Wait for the response** (background command — it sleeps): `scripts/wait-for-codex.sh <n> "$SINCE"` prints the commits Codex read, the review body, inline findings (path:line), issue comments, and any clean-review 👍. Act on the exit code, and keep the same `SINCE` for every rerun within a round:
 
@@ -60,7 +60,7 @@ end-to-end piece of a larger spec/PRD that ships on its own. Reviews come from t
 
 11. **Merge.** `gh pr merge <n> --merge --delete-branch` (swap `--squash` if the repo prefers it).
 
-12. **Close issues.** A closing keyword in the PR body may have closed the slice issue on merge already, so check state before acting. Summarize what was delivered and where on each issue either way: `gh issue close <n> --comment "..."` for what is still open, `gh issue comment <n> --body "..."` for what GitHub closed. Umbrella and duplicate issues are never auto-closed.
+12. **Close issues.** A closing keyword in the PR body may have closed the slice issue on merge already, so check state before acting. Summarize what was delivered and where on each issue either way: `gh issue close <n> --comment "..."` for what is still open, `gh issue comment <n> --body "..."` for what GitHub closed. The keyword only reaches the issues the PR body names, so close umbrella and duplicate issues yourself.
 
 ## Notes
 

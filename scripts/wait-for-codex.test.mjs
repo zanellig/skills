@@ -23,6 +23,9 @@ function runWaiter({ review, inline, response, notice, thumbsUp, eyes, commentEy
       `#!/usr/bin/env bash
 case "$*" in
   *reactions*) [[ "$*" == *--paginate* ]] || exit 9 ;;
+  # The pending scan (the comments query with no author filter) must start at
+  # SINCE rather than walking the PR's whole history.
+  *issues/3/comments*".id"*) [[ "$*" == *user.login* || "$*" == *">="* ]] || exit 10 ;;
 esac
 case "$*" in
   *"pulls/3 "*) ${prReadable ? "echo 3" : "exit 1"} ;;

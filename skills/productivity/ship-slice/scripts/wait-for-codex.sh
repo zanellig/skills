@@ -53,11 +53,14 @@ count_reactions() {
 }
 
 # The bot acknowledges a round with an eyes reaction on the PR, or on the
-# comment that activated it. Runs once after the wait expires, so the per
-# comment lookup costs nothing during polling.
+# comment that activated it. Only a comment from this round can carry one, so
+# the scan starts at SINCE rather than walking the PR's whole history. Runs
+# once after the wait expires, so the per comment lookup costs nothing during
+# polling.
 pending_on_comments() {
   local ids id
-  ids=$(gh api --paginate "repos/$REPO/issues/$PR/comments" --jq '.[].id' 2>/dev/null || true)
+  ids=$(gh api --paginate "repos/$REPO/issues/$PR/comments" \
+    --jq ".[] | select(.created_at >= \"$SINCE\") | .id" 2>/dev/null || true)
   for id in $ids; do
     gh api --paginate "repos/$REPO/issues/comments/$id/reactions" \
       --jq ".[] | select(.user.login==\"$BOT\" and .content==\"eyes\" and .created_at > \"$SINCE\") | .id" \

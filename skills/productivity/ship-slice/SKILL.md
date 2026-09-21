@@ -26,7 +26,7 @@ end-to-end piece of a larger spec/PRD that ships on its own. Reviews come from t
    Review trigger: Smart detect. A push activates the next round on its own; `@codex review` is for **On PR open** only.
    ```
 
-5. **Open the PR.** Immediately before running `gh pr create`, capture `SINCE=$(date -u +%Y-%m-%dT%H:%M:%SZ)`. Title it `Slice <id>: <summary>`. The body references the parent spec and the issues it closes. If an applicable policy opens the PR as a draft, creation does not activate review; capture a new `SINCE` immediately before the authorized transition to ready.
+5. **Open the PR.** Immediately before running `gh pr create`, capture `SINCE=$(date -u +%Y-%m-%dT%H:%M:%SZ)`. Title it `Slice <id>: <summary>`. The body references the parent spec and names the issues it closes with a closing keyword, so merging closes them. If an applicable policy opens the PR as a draft, creation does not activate review; capture a new `SINCE` immediately before the authorized transition to ready.
 
 6. **Treat PR creation as round 1.** Opening the PR activates the initial review. Do not also comment `@codex review`; that activates a second review of the same commit and can return duplicate findings. If the PR already existed when this process began, inspect existing Codex activity and resume from the latest round for the current remote head. If no response exists yet, capture a timestamp that precedes the pending review activity and wait for its response without requesting another review.
 
@@ -60,7 +60,7 @@ end-to-end piece of a larger spec/PRD that ships on its own. Reviews come from t
 
 11. **Merge.** `gh pr merge <n> --merge --delete-branch` (swap `--squash` if the repo prefers it).
 
-12. **Close issues.** Close the slice issue and any umbrella/duplicate issues with a comment summarizing what was delivered and where (`gh issue close <n> --comment "..."`).
+12. **Close issues.** A closing keyword in the PR body may have closed the slice issue on merge already, so check state before acting. Summarize what was delivered and where on each issue either way: `gh issue close <n> --comment "..."` for what is still open, `gh issue comment <n> --body "..."` for what GitHub closed. Umbrella and duplicate issues are never auto-closed.
 
 ## Notes
 

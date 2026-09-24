@@ -14,12 +14,12 @@ end-to-end piece of a larger spec/PRD that ships on its own. Reviews come from t
 
 1. **Load the work.** Read the slice issue (`gh issue view <n>`) and its parent spec/PRD. If handed a handoff doc path, read that first. Confirm acceptance criteria before touching code.
 
-2. **Confirm the review trigger.** Codex activates reviews on one of three settings, set per account and overridable per repo: **On PR open**, **On every push**, or **Smart detect**. Which one is in force decides whether step 9 ever posts `@codex review`, and no API exposes it. When the repo's agents file already records it, use that. Otherwise ask the user, then write one line under a `Codex Code review settings` heading in `AGENTS.md` — or `CLAUDE.md` when the repo has no `AGENTS.md`. Tell the user only when you added the line, so an already-recorded setting passes in silence. Nest the heading one level below an existing code-review section, otherwise add it at `##`. Step 4 commits the line, so the next agent reads it instead of asking again:
+2. **Confirm the review trigger.** Codex activates reviews on one of three settings, set per account and overridable per repo: **On PR open**, **On every push**, or **Smart detect**. Which one is in force decides whether step 9 ever posts `@codex review`, and no API exposes it. When the repo's agents file already records it, use that. Otherwise ask the user which setting applies and whether it is their account setting or a repo override, then write one line under a `Codex Code review settings` heading in `AGENTS.md` — or `CLAUDE.md` when the repo has no `AGENTS.md`. Tell the user only when you added the line, so an already-recorded setting passes in silence. Nest the heading one level below an existing code-review section, otherwise add it at `##`. Name the setting's scope, `(repo override)` or `(account setting for @<login>)`, so a contributor on another account knows whether the line applies to them. Step 4 commits the line, so the next agent reads it instead of asking again:
 
    ```markdown
    ## Codex Code review settings
 
-   Review trigger: Smart detect. A push activates the next round on its own; `@codex review` is for **On PR open** only.
+   Review trigger: Smart detect (account setting for @<login>).
    ```
 
 3. **Implement to acceptance criteria, with tests.** Every behavior change gets a test. Run the project's test/check suite and make it green. Format before committing.

@@ -17,10 +17,10 @@ Evidence behind the Codex behavior `SKILL.md` relies on. Check a claim here befo
 | Notices: usage limit, missing environment | Observed | [sweep](observed-behavior.md#notices) |
 | A clean round is the `Didn't find any major issues` comment, often with a PR 👍 | Documented, observed | [docs](codex-docs.md#reactions), [sweep](observed-behavior.md#clean-rounds) |
 | 👀 means a review is in flight | Documented | [docs](codex-docs.md#reactions) |
-| The bot leaves 👀 in place after a review | **Contradicted**: removed on 85 of 87 | [sweep](observed-behavior.md#eyes-reaction) |
+| The bot usually removes 👀 but can leave it on a dropped request | Observed: removed on 85 of 87 | [sweep](observed-behavior.md#eyes-reaction) |
 | The bot reads a thread reply only when @-mentioned | Observed | [sweep](observed-behavior.md#thread-replies) |
-| `@codex` in a thread spends a review against usage limits | Unverified | [sweep](observed-behavior.md#thread-replies) |
+| `@codex` anywhere in a thread reply starts a task that spends the user's Codex usage | Task observed; billing unverified | [sweep](observed-behavior.md#task-summaries) |
 | A second request re-reviews the same commit with duplicate findings | Observed once | [email#37](observed-behavior.md#stale-and-duplicate-reviews) |
 | Codex reviews the commit as of request time, so pin the SHA | Observed | [email#37, pagos#28](observed-behavior.md#stale-and-duplicate-reviews) |
-| Under Smart detect a reviewed push answers within 15 minutes | Observed for 82% | [latency](observed-behavior.md#review-latency) |
+| Under Smart detect a reviewed push usually answers within 15 minutes | Observed: 82% | [latency](observed-behavior.md#review-latency) |
 | GitHub keeps one reaction of each type per user | GitHub API behavior | [docs](codex-docs.md#github) |

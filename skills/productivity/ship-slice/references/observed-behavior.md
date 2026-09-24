@@ -61,7 +61,7 @@ Repo trigger: Smart detect. On [skills#11](https://github.com/zanellig/skills/pu
 
 ## Eyes reaction
 
-Of 87 human comments containing `@codex`, Codex's 👀 remains on 2, and no 👀 remains on any PR. So the bot usually removes 👀 when it responds, contrary to the skill's note that it "leaves the reaction in place". The two leftovers:
+Of 87 human comments containing `@codex`, Codex's 👀 remains on 2, and no 👀 remains on any PR. So the bot usually removes 👀 when it responds. The two leftovers:
 
 - [pagos#28](https://github.com/cogniarg/pagos/pull/28#issuecomment-4987829042): a request pinned `62250c9` at 03:22:33. Three minutes later `2de567c` was pushed and [re-requested](https://github.com/cogniarg/pagos/pull/28#issuecomment-4987843030). The next review, at 03:31, read `2de567c`, and `62250c9` was never reviewed. The dropped request kept its 👀.
 - [sampedro#44](https://github.com/cogniarg/sampedro/pull/44#issuecomment-4526879496): answered by a review 8 minutes later, yet the 👀 stayed.

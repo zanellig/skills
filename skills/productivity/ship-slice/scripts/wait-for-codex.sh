@@ -1,14 +1,16 @@
 #!/usr/bin/env bash
 # wait-for-codex.sh — poll a PR for a fresh Codex review response, then print it.
 #
-# Usage: wait-for-codex.sh <pr> [since_iso] [owner/repo]
+# Usage: wait-for-codex.sh <pr> <since_iso> [owner/repo]
 #   <pr>        PR number.
-#   [since_iso] Only count responses newer than this UTC ISO timestamp.
-#               Default: 2 minutes ago (buffers against a race with your request).
+#   <since_iso> UTC ISO timestamp captured just before the push or request.
+#               Only responses newer than it count, which is what ties a
+#               clean thumbs-up to that head.
 #   [owner/repo] Default: current repo via `gh repo view`.
 #
-# Env: POLLS (default 30 sleeps), INTERVAL (default 60s per sleep).
-# Exits 0 once Codex responds (printing the commits it read and the findings),
+# Env: POLLS (default 15 sleeps), INTERVAL (default 60s per sleep).
+# Exits 0 once Codex responds (printing the commits it read and the findings)
+# or one poll after a clean-review thumbs-up,
 # 1 on timeout, 2 when a fresh eyes reaction shows a review still in flight,
 # 3 when the repo or PR cannot be read, and 4 when Codex posted a notice
 # instead of a review, which means the round never ran.
@@ -16,9 +18,12 @@
 # Run this as a BACKGROUND command — it sleeps between polls.
 set -euo pipefail
 
-PR="${1:?usage: wait-for-codex.sh <pr> [since_iso] [owner/repo]}"
-SINCE="${2:-$(date -u -d '-2 minutes' +%Y-%m-%dT%H:%M:%SZ 2>/dev/null \
-  || date -u -v-2M +%Y-%m-%dT%H:%M:%SZ)}"
+if [ -z "${1:-}" ] || [ -z "${2:-}" ]; then
+  echo "ERROR: usage: wait-for-codex.sh <pr> <since_iso> [owner/repo]" >&2
+  exit 3
+fi
+PR="$1"
+SINCE="$2"
 if ! REPO="${3:-$(gh repo view --json nameWithOwner --jq .nameWithOwner)}"; then
   echo "ERROR: cannot resolve the repo. Run inside it or pass owner/repo." >&2
   exit 3
@@ -28,7 +33,7 @@ gh api "repos/$REPO/pulls/$PR" --jq .number >/dev/null 2>&1 || {
   exit 3
 }
 BOT="chatgpt-codex-connector[bot]"
-POLLS="${POLLS:-30}"
+POLLS="${POLLS:-15}"
 INTERVAL="${INTERVAL:-60}"
 
 line_count() {
@@ -104,8 +109,18 @@ print_findings() {
     --jq ".[] | select(.user.login==\"$BOT\" and .content==\"+1\" and .created_at > \"$SINCE\") | {content, created_at}" 2>/dev/null || true
 }
 
+# A thumbs-up names no commit, but a fresh one postdates SINCE, captured just
+# before the push or request, so it covers that head.
+clean_thumbs_up() {
+  print_findings
+  echo "--- Clean: the thumbs-up covers the head pushed or requested at $SINCE ---"
+  exit 0
+}
+
 # Sleep before every check but the first, so a response that lands during the
-# last sleep still gets classified.
+# last sleep still gets classified. A comment naming the commit lands within
+# seconds of the thumbs-up when it comes at all, so one more poll waits for it.
+thumbs_up=0
 for i in $(seq 0 "$POLLS"); do
   [ "$i" -eq 0 ] || sleep "$INTERVAL"
   if [ "$(count_new)" -gt 0 ]; then
@@ -118,15 +133,11 @@ for i in $(seq 0 "$POLLS"); do
     printf '%s\n' "$notice"
     exit 4
   fi
+  [ "$thumbs_up" -eq 0 ] || clean_thumbs_up
+  [ "$(count_reactions "+1")" -eq 0 ] || thumbs_up=1
 done
 
-# A thumbs-up names no commit, so it only ends the round once the wait expires
-# without a response that does.
-if [ "$(count_reactions "+1")" -gt 0 ]; then
-  print_findings
-  echo "--- No reviewed commit named: re-request with the head SHA pinned ---"
-  exit 0
-fi
+[ "$thumbs_up" -eq 0 ] || clean_thumbs_up
 
 if [ "$(count_reactions "eyes")" -gt 0 ] || [ -n "$(pending_on_comments)" ]; then
   echo "PENDING: Codex review is in flight on $REPO#$PR (since $SINCE)"

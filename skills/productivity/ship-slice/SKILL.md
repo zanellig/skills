@@ -50,7 +50,7 @@ end-to-end piece of a larger spec/PRD that ships on its own. Reviews come from t
 
    **End the loop.** Only a genuine Codex response completes a round, and Codex decides when a round is clean, whatever you fixed or declined. Stop when Codex's `Didn't find any major issues` comment names the SHA you pushed, or when the pass count is spent. When the pass count runs out after you push fixes, wait out the review that push activates before merging; under **On PR open**, request it with the pinned comment. That final review is not a pass, and its findings do not block the merge. File them in one follow-up issue with `gh issue create`, listing each finding with a link to its thread. Reply on each thread with the issue link, then resolve it. The user can run `/ship-slice #<issue> <passes>` on it.
 
-10. **CI green, head reviewed, threads closed.** `gh pr checks <n>`. Fix reds and re-push. Confirm the waiter's latest output lists `git rev-parse HEAD` among the commits Codex read, so Codex has reviewed what you merge. Then confirm every review thread is resolved, so the merge carries a fix or an answer for each finding. The query prints each open thread's id, author, and path:
+10. **CI green, head reviewed, threads closed.** `gh pr checks <n>`. Push CI fixes through step 9, since each push makes a new head that needs its own review. Confirm the waiter's latest output lists `git rev-parse HEAD` among the commits Codex read, so Codex has reviewed what you merge. Then confirm every review thread is resolved, so the merge carries a fix or an answer for each finding. The query prints each open thread's id, author, and path:
 
    ```bash
    gh api graphql --paginate \

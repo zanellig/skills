@@ -61,8 +61,11 @@ Codex has 👍 on 29 PRs. On 20 the clean comment came 0–4 seconds after the �
 | --- | --- |
 | 20:42:33 | 👀 on the PR |
 | 20:45:26 | 👀 gone, 👍 on the PR; no comment and no review |
+| 21:08:27 | `f8dd6f6` pushed |
+| 21:12:07 | [Review of `f8dd6f6`](https://github.com/zanellig/skills/pull/13#pullrequestreview-5310279163) with one P1 finding |
+| 21:12:57 | The 20:45 👍 is gone from the PR |
 
-Codex's task page for that review read "Worked for 2m 47s" and "Codex didn't flag any issues." So a 👍 alone was a clean review, as the footer promises.
+Codex's task page for that review read "Worked for 2m 47s" and "Codex didn't flag any issues." So a 👍 alone was a clean review, as the footer promises. Codex also cleared that 👍 once the next round began, so a later clean round could add a fresh one.
 
 ## A push activates a review
 

@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 # wait-for-codex.sh — poll a PR for a fresh Codex review response, then print it.
 #
-# Usage: wait-for-codex.sh <pr> [since_iso] [owner/repo]
+# Usage: wait-for-codex.sh <pr> <since_iso> [owner/repo]
 #   <pr>        PR number.
-#   [since_iso] Only count responses newer than this UTC ISO timestamp.
-#               Default: 2 minutes ago (buffers against a race with your request).
+#   <since_iso> UTC ISO timestamp captured just before the push or request.
+#               Only responses newer than it count, which is what ties a
+#               clean thumbs-up to that head.
 #   [owner/repo] Default: current repo via `gh repo view`.
 #
 # Env: POLLS (default 15 sleeps), INTERVAL (default 60s per sleep).
@@ -17,9 +18,12 @@
 # Run this as a BACKGROUND command — it sleeps between polls.
 set -euo pipefail
 
-PR="${1:?usage: wait-for-codex.sh <pr> [since_iso] [owner/repo]}"
-SINCE="${2:-$(date -u -d '-2 minutes' +%Y-%m-%dT%H:%M:%SZ 2>/dev/null \
-  || date -u -v-2M +%Y-%m-%dT%H:%M:%SZ)}"
+if [ -z "${1:-}" ] || [ -z "${2:-}" ]; then
+  echo "ERROR: usage: wait-for-codex.sh <pr> <since_iso> [owner/repo]" >&2
+  exit 3
+fi
+PR="$1"
+SINCE="$2"
 if ! REPO="${3:-$(gh repo view --json nameWithOwner --jq .nameWithOwner)}"; then
   echo "ERROR: cannot resolve the repo. Run inside it or pass owner/repo." >&2
   exit 3

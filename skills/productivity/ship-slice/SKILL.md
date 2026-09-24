@@ -26,7 +26,7 @@ end-to-end piece of a larger spec/PRD that ships on its own. Reviews come from t
 
 4. **Commit and push.** Commit by scope with conventional-commit messages. Push with an **explicit remote and branch** — `git push origin <branch>`. A *bare* `git push` whose output is piped (e.g. `git push 2>&1 | tail`) can be swallowed by a shell wrapper: no output, exit 0, nothing on the remote. After any push that matters, verify it landed: `git ls-remote origin refs/heads/<branch>` must equal `git rev-parse HEAD`.
 
-5. **Open the PR.** Immediately before running `gh pr create`, capture `SINCE=$(date -u +%Y-%m-%dT%H:%M:%SZ)`. Title it `Slice <id>: <summary>`. The body references the parent spec and names the issues it closes with a closing keyword, so merging closes them. If an applicable policy opens the PR as a draft, creation does not activate review; capture a new `SINCE` immediately before the authorized transition to ready.
+5. **Open the PR.** Immediately before running `gh pr create`, capture `SINCE=$(date -u +%Y-%m-%dT%H:%M:%SZ)`. Title it `Slice <id>: <summary>`. The body references the parent spec and names the issues it closes with a closing keyword, so merging closes them. Write "Codex" without the `@` in the body, since a mention there starts a task instead of a review. If an applicable policy opens the PR as a draft, creation does not activate review; capture a new `SINCE` immediately before the authorized transition to ready.
 
 6. **Treat PR creation as round 1.** Opening the PR activates the initial review, so let that one run. A second `@codex review` comment re-reviews the same commit and returns duplicate findings against your usage limits. If the PR already existed when this process began, inspect existing Codex activity and resume from the latest round for the current remote head. If no response exists yet, capture a timestamp that precedes the pending review activity and wait for its response without requesting another review.
 
@@ -38,7 +38,7 @@ end-to-end piece of a larger spec/PRD that ships on its own. Reviews come from t
    | 1 | Timeout. A timeout is never zero findings. | Under **On PR open**, activate the next round (step 9). Under **On every push**, rerun once, then hand off. Under **Smart detect**, rerun once; a second timeout means it skipped the push, so activate the round with step 9's pinned request. |
    | 2 | A fresh 👀 means the review is in flight. | Rerun once. A second exit 2 means the reaction is stale, because the bot keeps it after a review finishes; treat that as exit 1. |
    | 3 | The repo or PR could not be read. | Repair `gh` auth or the arguments, then rerun. |
-   | 4 | Codex posted a **notice** instead of a review (usage limit, missing environment). | Stop. Report the notice and hand off. |
+   | 4 | Codex posted a **notice** instead of a review (usage limit, missing environment). | Stop. Report the notice and hand off. When the notice is a task summary instead, an `@codex` mention started a task, so the review never started: activate the round with step 9's pinned request. |
 
    A notice means the round never ran, so the commit carries no review and the PR stays open. Requesting again reproduces the notice until the underlying limit clears.
 

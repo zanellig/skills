@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { chmodSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { chmodSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -12,7 +12,7 @@ const NOTICE = "You have reached your Codex usage limits for code reviews.";
 // Stubs `gh` so each query the waiter makes answers from one scenario. The bot
 // issue-comment query splits on whether the body names a reviewed commit, so
 // the stub matches the `== true` / `== false` jq the script builds.
-function runWaiter({ review, inline, response, lateResponse, notice, lateNotice, thumbsUp, eyes, commentEyes, prReadable = true } = {}) {
+function runWaiter({ review, inline, response, lateResponse, notice, lateNotice, thumbsUp, eyes, commentEyes, prReadable = true, polls = 1 } = {}) {
   const bin = mkdtempSync(join(tmpdir(), "wait-for-codex-"));
   const gh = join(bin, "gh");
   const emit = (on, text) => (on ? `echo '${text}'` : ":");
@@ -43,12 +43,15 @@ esac
 `,
     );
     chmodSync(gh, 0o755);
-    writeFileSync(join(bin, "sleep"), `#!/usr/bin/env bash\ntouch "${bin}/slept"\n`);
+    writeFileSync(join(bin, "sleep"), `#!/usr/bin/env bash\necho >> "${bin}/slept"\n`);
     chmodSync(join(bin, "sleep"), 0o755);
 
-    return Bun.spawnSync(["bash", SCRIPT, "3", SINCE, "owner/repo"], {
-      env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, POLLS: "1", INTERVAL: "0" },
+    const result = Bun.spawnSync(["bash", SCRIPT, "3", SINCE, "owner/repo"], {
+      env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, POLLS: String(polls), INTERVAL: "0" },
     });
+    const slept = join(bin, "slept");
+    result.sleeps = existsSync(slept) ? readFileSync(slept, "utf8").split("\n").length - 1 : 0;
+    return result;
   } finally {
     rmSync(bin, { recursive: true, force: true });
   }
@@ -69,11 +72,12 @@ test("a comment naming the reviewed commit completes a round", () => {
   expect(result.stdout.toString()).toContain("Reviewed commit");
 });
 
-test("a thumbs-up alone completes a clean review once the wait expires", () => {
-  const result = runWaiter({ thumbsUp: true });
+test("a thumbs-up alone completes a clean round one poll later", () => {
+  const result = runWaiter({ thumbsUp: true, polls: 5 });
 
   expect(result.exitCode).toBe(0);
-  expect(result.stdout.toString()).toContain("No reviewed commit named");
+  expect(result.sleeps).toBe(1);
+  expect(result.stdout.toString()).toContain("Clean: the thumbs-up covers the head");
 });
 
 test("a thumbs-up keeps the wait open for the comment naming the reviewed commit", () => {
@@ -81,7 +85,7 @@ test("a thumbs-up keeps the wait open for the comment naming the reviewed commit
 
   expect(result.exitCode).toBe(0);
   expect(result.stdout.toString()).toContain("abc1234567");
-  expect(result.stdout.toString()).not.toContain("No reviewed commit named");
+  expect(result.stdout.toString()).not.toContain("Clean: the thumbs-up");
 });
 
 test("a notice blocks the round instead of completing it", () => {

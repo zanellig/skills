@@ -12,7 +12,7 @@ const NOTICE = "You have reached your Codex usage limits for code reviews.";
 // Stubs `gh` so each query the waiter makes answers from one scenario. The bot
 // issue-comment query splits on whether the body names a reviewed commit, so
 // the stub matches the `== true` / `== false` jq the script builds.
-function runWaiter({ review, inline, response, lateResponse, notice, lateNotice, thumbsUp, eyes, commentEyes, prReadable = true, polls = 1 } = {}) {
+function runWaiter({ review, inline, response, lateResponse, notice, lateNotice, thumbsUp, eyes, commentEyes, prReadable = true, polls = 1, since = SINCE } = {}) {
   const bin = mkdtempSync(join(tmpdir(), "wait-for-codex-"));
   const gh = join(bin, "gh");
   const emit = (on, text) => (on ? `echo '${text}'` : ":");
@@ -46,7 +46,7 @@ esac
     writeFileSync(join(bin, "sleep"), `#!/usr/bin/env bash\necho >> "${bin}/slept"\n`);
     chmodSync(join(bin, "sleep"), 0o755);
 
-    const result = Bun.spawnSync(["bash", SCRIPT, "3", SINCE, "owner/repo"], {
+    const result = Bun.spawnSync(["bash", SCRIPT, "3", since, "owner/repo"], {
       env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, POLLS: String(polls), INTERVAL: "0" },
     });
     const slept = join(bin, "slept");
@@ -134,6 +134,13 @@ test("an eyes reaction on the activating comment also reports an in-flight revie
 
   expect(result.exitCode).toBe(2);
   expect(result.stdout.toString()).toContain("PENDING: Codex review is in flight");
+});
+
+test("a missing since timestamp is an error, so a stale thumbs-up cannot pass as clean", () => {
+  const result = runWaiter({ thumbsUp: true, since: "" });
+
+  expect(result.exitCode).toBe(3);
+  expect(result.stderr.toString()).toContain("<since_iso>");
 });
 
 test("an unreadable PR is an error, not a timeout", () => {

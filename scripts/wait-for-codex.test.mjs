@@ -12,7 +12,7 @@ const NOTICE = "You have reached your Codex usage limits for code reviews.";
 // Stubs `gh` so each query the waiter makes answers from one scenario. The bot
 // issue-comment query splits on whether the body names a reviewed commit, so
 // the stub matches the `== true` / `== false` jq the script builds.
-function runWaiter({ review, inline, response, notice, thumbsUp, eyes, commentEyes, prReadable = true } = {}) {
+function runWaiter({ review, inline, response, notice, lateNotice, thumbsUp, eyes, commentEyes, prReadable = true } = {}) {
   const bin = mkdtempSync(join(tmpdir(), "wait-for-codex-"));
   const gh = join(bin, "gh");
   const emit = (on, text) => (on ? `echo '${text}'` : ":");
@@ -32,7 +32,10 @@ case "$*" in
   *pulls/3/reviews*) ${emit(review, '{"state":"COMMENTED","commit_id":"abc1234567"}')} ;;
   *pulls/3/comments*) ${emit(inline, '{"path":"a.ts","line":1,"commit_id":"def7654321"}')} ;;
   *issues/3/comments*"== true"*) ${emit(response, RESPONSE)} ;;
-  *issues/3/comments*"== false"*) ${emit(notice, NOTICE)} ;;
+  *issues/3/comments*"== false"*)
+    ${emit(notice, NOTICE)}
+    # A late notice answers only the second check, the one after the last sleep.
+    ${lateNotice ? `[ -e "${bin}/checked" ] && echo '${NOTICE}'; touch "${bin}/checked"` : ":"} ;;
   *issues/3/comments*) ${emit(commentEyes, "42")} ;;
   *issues/comments/42/reactions*) ${emit(commentEyes, "77")} ;;
   *issues/3/reactions*eyes*) ${emit(eyes, "77")} ;;
@@ -78,6 +81,12 @@ test("a notice blocks the round instead of completing it", () => {
   expect(result.exitCode).toBe(4);
   expect(result.stdout.toString()).toContain("BLOCKED: Codex posted a notice");
   expect(result.stdout.toString()).toContain("usage limits");
+});
+
+test("a notice that lands during the last sleep still blocks the round", () => {
+  const result = runWaiter({ lateNotice: true });
+
+  expect(result.exitCode).toBe(4);
 });
 
 test("a review still completes the round when a notice is also present", () => {

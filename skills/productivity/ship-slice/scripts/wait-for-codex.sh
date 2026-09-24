@@ -7,7 +7,7 @@
 #               Default: 2 minutes ago (buffers against a race with your request).
 #   [owner/repo] Default: current repo via `gh repo view`.
 #
-# Env: POLLS (default 30 iterations), INTERVAL (default 60s between polls).
+# Env: POLLS (default 30 sleeps), INTERVAL (default 60s per sleep).
 # Exits 0 once Codex responds (printing the commits it read and the findings),
 # 1 on timeout, 2 when a fresh eyes reaction shows a review still in flight,
 # 3 when the repo or PR cannot be read, and 4 when Codex posted a notice
@@ -105,7 +105,10 @@ print_findings() {
     --jq ".[] | select(.user.login==\"$BOT\" and .content==\"+1\" and .created_at > \"$SINCE\") | {content, created_at}" 2>/dev/null || true
 }
 
-for _ in $(seq 1 "$POLLS"); do
+# Sleep before every check but the first, so a response that lands during the
+# last sleep still gets classified.
+for i in $(seq 0 "$POLLS"); do
+  [ "$i" -eq 0 ] || sleep "$INTERVAL"
   if [ "$(count_new)" -gt 0 ]; then
     print_findings
     exit 0
@@ -116,7 +119,6 @@ for _ in $(seq 1 "$POLLS"); do
     printf '%s\n' "$notice"
     exit 4
   fi
-  sleep "$INTERVAL"
 done
 
 if [ "$(count_reactions "eyes")" -gt 0 ] || [ -n "$(pending_on_comments)" ]; then

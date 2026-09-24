@@ -69,7 +69,7 @@ pending_on_comments() {
 }
 
 count_new() {
-  local reviews comments inline reactions matches
+  local reviews comments inline matches
   matches=$(gh api --paginate "repos/$REPO/pulls/$PR/reviews" \
     --jq ".[] | select(.user.login==\"$BOT\" and .submitted_at > \"$SINCE\") | .id" 2>/dev/null || true)
   reviews=$(printf '%s\n' "$matches" | line_count)
@@ -78,8 +78,7 @@ count_new() {
   matches=$(gh api --paginate "repos/$REPO/pulls/$PR/comments" \
     --jq ".[] | select(.user.login==\"$BOT\" and .created_at > \"$SINCE\") | .id" 2>/dev/null || true)
   inline=$(printf '%s\n' "$matches" | line_count)
-  reactions=$(count_reactions "+1")
-  echo $(( reviews + comments + inline + reactions ))
+  echo $(( reviews + comments + inline ))
 }
 
 print_findings() {
@@ -95,9 +94,9 @@ print_findings() {
   echo "--- Review summaries (state / body) ---"
   gh api --paginate "repos/$REPO/pulls/$PR/reviews" \
     --jq ".[] | select(.user.login==\"$BOT\" and .submitted_at > \"$SINCE\") | {state, submitted_at, body}" 2>/dev/null || true
-  echo "--- Inline findings (path:line) ---"
+  echo "--- Inline findings (id, path:line) ---"
   gh api --paginate "repos/$REPO/pulls/$PR/comments" \
-    --jq ".[] | select(.user.login==\"$BOT\" and .created_at > \"$SINCE\") | {path, line, body}" 2>/dev/null || true
+    --jq ".[] | select(.user.login==\"$BOT\" and .created_at > \"$SINCE\") | {id, path, line, body}" 2>/dev/null || true
   echo "--- Issue comments ---"
   bot_comments true body
   echo "--- Clean-review reactions ---"
@@ -120,6 +119,14 @@ for i in $(seq 0 "$POLLS"); do
     exit 4
   fi
 done
+
+# A thumbs-up names no commit, so it only ends the round once the wait expires
+# without a response that does.
+if [ "$(count_reactions "+1")" -gt 0 ]; then
+  print_findings
+  echo "--- No reviewed commit named: re-request with the head SHA pinned ---"
+  exit 0
+fi
 
 if [ "$(count_reactions "eyes")" -gt 0 ] || [ -n "$(pending_on_comments)" ]; then
   echo "PENDING: Codex review is in flight on $REPO#$PR (since $SINCE)"

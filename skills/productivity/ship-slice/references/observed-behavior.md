@@ -53,7 +53,16 @@ A task summary starts `### Summary`, lists the changes Codex made, has a **Testi
 
 The sign-off after the first sentence varies (12 variants: `:+1:`, `Swish!`, `:rocket:`, `Bravo.`, …), so match only the prefix.
 
-Codex has 👍 on 29 PRs, 20 of which also have a clean comment. The 👍 names no commit, and GitHub keeps one per user and type, so it cannot mark a later clean round.
+Codex has 👍 on 29 PRs. On 20 the clean comment came 0–4 seconds after the 👍 (one outlier, Web-de-pagos-para-aseguradora#36, came 139 seconds before it). The other 9 got the 👍 and no comment. No 👍 arrived alongside a findings review; the nearest findings reviews came 5–8 minutes earlier, in the round before a fix push. The 👍 names no commit, and GitHub keeps one per user and type, so it cannot mark a later clean round.
+
+[skills#13](https://github.com/zanellig/skills/pull/13), opened 2026-09-24 at 20:42:26 with Smart detect:
+
+| Time (UTC) | Event |
+| --- | --- |
+| 20:42:33 | 👀 on the PR |
+| 20:45:26 | 👀 gone, 👍 on the PR; no comment and no review |
+
+Codex's task page for that review read "Worked for 2m 47s" and "Codex didn't flag any issues." So a 👍 alone was a clean review, as the footer promises.
 
 ## A push activates a review
 
@@ -61,7 +70,7 @@ Repo trigger: Smart detect. On [skills#11](https://github.com/zanellig/skills/pu
 
 ## Eyes reaction
 
-Of 87 human comments containing `@codex`, Codex's 👀 remains on 2, and no 👀 remains on any PR. So the bot usually removes 👀 when it responds. The two leftovers:
+Of 87 human comments containing `@codex`, Codex's 👀 remains on 2, and no 👀 remains on any PR. So the bot usually removes 👀 when it responds. It removed the PR-level 👀 on [skills#13](#clean-rounds) too, replacing it with 👍. The two leftovers:
 
 - [pagos#28](https://github.com/cogniarg/pagos/pull/28#issuecomment-4987829042): a request pinned `62250c9` at 03:22:33. Three minutes later `2de567c` was pushed and [re-requested](https://github.com/cogniarg/pagos/pull/28#issuecomment-4987843030). The next review, at 03:31, read `2de567c`, and `62250c9` was never reviewed. The dropped request kept its 👀.
 - [sampedro#44](https://github.com/cogniarg/sampedro/pull/44#issuecomment-4526879496): answered by a review 8 minutes later, yet the 👀 stayed.
@@ -102,4 +111,4 @@ Measured on 2026-09-24 over 128 Codex reviews from the same owners (up to 40 PRs
 | 31–60 min | 2 |
 | > 60 min | 24 |
 
-Median 11 minutes. The > 60 min group is mostly pushes Codex skipped and reviewed later on request. Of the other 104, 85 (82%) answered within 15 minutes and 102 (98%) within 30. The skill's `POLLS=15` for Smart detect push rounds follows from this. Its cost is a duplicate review when a slow push review lands after the pinned request. Pinned requests on skills#12 came back in 4–6 minutes.
+Median 11 minutes. The > 60 min group is mostly pushes Codex skipped and reviewed later on request. Of the other 104, 85 (82%) answered within 15 minutes and 102 (98%) within 30. The waiter's 15-minute default follows from this. Its cost is a duplicate review when a slow review lands after the pinned request. Pinned requests on skills#12 came back in 4–6 minutes.

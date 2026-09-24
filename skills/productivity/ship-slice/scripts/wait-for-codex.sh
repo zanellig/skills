@@ -95,9 +95,9 @@ print_findings() {
   echo "--- Review summaries (state / body) ---"
   gh api --paginate "repos/$REPO/pulls/$PR/reviews" \
     --jq ".[] | select(.user.login==\"$BOT\" and .submitted_at > \"$SINCE\") | {state, submitted_at, body}" 2>/dev/null || true
-  echo "--- Inline findings (path:line) ---"
+  echo "--- Inline findings (id, path:line) ---"
   gh api --paginate "repos/$REPO/pulls/$PR/comments" \
-    --jq ".[] | select(.user.login==\"$BOT\" and .created_at > \"$SINCE\") | {path, line, body}" 2>/dev/null || true
+    --jq ".[] | select(.user.login==\"$BOT\" and .created_at > \"$SINCE\") | {id, path, line, body}" 2>/dev/null || true
   echo "--- Issue comments ---"
   bot_comments true body
   echo "--- Clean-review reactions ---"

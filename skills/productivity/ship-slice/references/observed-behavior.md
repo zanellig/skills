@@ -67,6 +67,10 @@ Codex has 👍 on 29 PRs. On 20 the clean comment came 0–4 seconds after the �
 
 Codex's task page for that review read "Worked for 2m 47s" and "Codex didn't flag any issues." So a 👍 alone was a clean review, as the footer promises. Codex also cleared that 👍 once the next round began, so a later clean round could add a fresh one.
 
+Codex's cloud dashboard lists every review as a task. It marks a review with findings with a bug badge and a clean one with none. For skills#13 it listed three reviews, one per activation: PR open (clean), `f8dd6f6` (1 bug), and `345e67c` (1 bug). The dashboard is a second way to confirm a 👍-only round.
+
+On skills#13 every round resolved before the next push. A push made while a round is still in flight could get that round's 👍 after the push, which the waiter would credit to the new head. Step 9 rules that push out.
+
 ## A push activates a review
 
 Repo trigger: Smart detect. On [skills#11](https://github.com/zanellig/skills/pull/11), `ab75e86` was committed at 15:34:53 and pushed. The only human activity afterwards was a plain inline reply at 15:36:36 with no `@codex`. Codex [reviewed `ab75e86`](https://github.com/zanellig/skills/pull/11#pullrequestreview-5306706262) at 15:43:14 with five findings.

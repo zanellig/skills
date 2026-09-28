@@ -3,7 +3,7 @@
 Evidence behind the Codex behavior `SKILL.md` relies on. Check a claim here before changing it, and add its evidence here when you add one.
 
 - [`codex-docs.md`](codex-docs.md): what OpenAI's docs and the bot's own review footer state.
-- [`observed-behavior.md`](observed-behavior.md): what Codex actually did across 99 PRs on `zanellig/*` and `REDACTED/*`, swept 2026-09-24.
+- [`observed-behavior.md`](observed-behavior.md): what Codex actually did across 99 PRs, swept 2026-09-24.
 
 | Claim in `SKILL.md` | Status | Evidence |
 | --- | --- | --- |
@@ -21,7 +21,7 @@ Evidence behind the Codex behavior `SKILL.md` relies on. Check a claim here befo
 | The bot usually removes 👀 but can leave it on a dropped request | Observed: removed on 85 of 87 comments and on skills#13 | [sweep](observed-behavior.md#eyes-reaction) |
 | The bot reads a thread reply only when @-mentioned | Observed | [sweep](observed-behavior.md#thread-replies) |
 | `@codex` anywhere in a thread reply starts a task that spends the user's Codex usage | Task observed; billing unverified | [sweep](observed-behavior.md#task-summaries) |
-| A second request re-reviews the same commit with duplicate findings | Observed once | [another PR](observed-behavior.md#stale-and-duplicate-reviews) |
-| Codex reviews the commit as of request time, so pin the SHA | Observed | [another PR, another PR](observed-behavior.md#stale-and-duplicate-reviews) |
+| A second request re-reviews the same commit with duplicate findings | Observed once | [sweep](observed-behavior.md#stale-and-duplicate-reviews) |
+| Codex reviews the commit as of request time, so pin the SHA | Observed | [sweep](observed-behavior.md#stale-and-duplicate-reviews) |
 | A review usually answers within 15 minutes, the waiter's default | Observed: 82% | [latency](observed-behavior.md#review-latency) |
 | GitHub keeps one reaction of each type per user | GitHub API behavior | [docs](codex-docs.md#github) |

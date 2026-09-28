@@ -2,7 +2,7 @@
 
 ## Sweep
 
-On 2026-09-24, every PR on `user:zanellig` or `org:REDACTED` matching `commenter:chatgpt-codex-connector[bot]` or `reviewed-by:chatgpt-codex-connector[bot]`: 99 PRs from 2026-03-13 to 2026-09-24. For each, the issue comments, reviews, review comments, PR reactions, and the reactions on every human comment containing `@codex`. `REDACTED/*` links are private to that org.
+On 2026-09-24, every PR on the maintainer's personal account and organization matching `commenter:chatgpt-codex-connector[bot]` or `reviewed-by:chatgpt-codex-connector[bot]`: 99 PRs from 2026-03-13 to 2026-09-24. For each, the issue comments, reviews, review comments, PR reactions, and the reactions on every human comment containing `@codex`. PRs outside this repo are described, not named.
 
 ## Response shapes
 
@@ -24,11 +24,11 @@ Usage limit, 46 times, e.g. [skills#10](https://github.com/zanellig/skills/pull/
 
 > You have reached your Codex usage limits for code reviews. You can see your limits in the Codex usage dashboard.
 
-Missing environment, 3 times, e.g. [skills#11](https://github.com/zanellig/skills/pull/11#issuecomment-5765331231) and [another PR](https://github.com/REDACTED):
+Missing environment, 3 times, e.g. [skills#11](https://github.com/zanellig/skills/pull/11#issuecomment-5765331231):
 
 > To use Codex here, create an environment for this repo.
 
-On [another PR](https://github.com/REDACTED) a request at 18:30:10 got the usage-limit notice 13 seconds later, and the push of `2346f98` at 18:48 got it again at 18:50. A notice repeats until the limit clears.
+On one PR, a request at 18:30:10 got the usage-limit notice 13 seconds later, and a push at 18:48 got it again at 18:50. A notice repeats until the limit clears.
 
 ## Task summaries
 
@@ -39,13 +39,13 @@ A task summary starts `### Summary`, lists the changes Codex made, has a **Testi
 **Thread mentions.** `@codex` with anything but `review` in a review thread gets an answer or a task in that thread:
 
 - [skills#11](https://github.com/zanellig/skills/pull/11#discussion_r4065454962): a "Fixed in b008e36" reply that said "escalating to @codex only if the finding returns" started a task. A mention mid-sentence counts.
-- [skills#11](https://github.com/zanellig/skills/pull/11#discussion_r4065942129) and [another PR](https://github.com/REDACTED): requests to change code got task summaries.
-- [another PR](https://github.com/REDACTED) and [another PR](https://github.com/REDACTED): questions got answers.
-- [another PR](https://github.com/REDACTED) and [another PR](https://github.com/REDACTED): the repo had no environment, so the reply was the environment notice. Thread mentions run as tasks.
+- [skills#11](https://github.com/zanellig/skills/pull/11#discussion_r4065942129) and one other PR: requests to change code got task summaries.
+- Two other PRs: questions got answers.
+- Two other PRs: the repo had no environment, so the reply was the environment notice. Thread mentions run as tasks.
 
 ## Clean rounds
 
-24 clean rounds, each an issue comment that opens `Codex Review: Didn't find any major issues.` and names the commit, e.g. [another PR](https://github.com/REDACTED):
+24 clean rounds, each an issue comment that opens `Codex Review: Didn't find any major issues.` and names the commit, e.g.:
 
 > Codex Review: Didn't find any major issues. Another round soon, please!
 >
@@ -53,7 +53,7 @@ A task summary starts `### Summary`, lists the changes Codex made, has a **Testi
 
 The sign-off after the first sentence varies (12 variants: `:+1:`, `Swish!`, `:rocket:`, `Bravo.`, …), so match only the prefix.
 
-Codex has 👍 on 29 PRs. On 20 the clean comment came 0–4 seconds after the 👍 (one outlier, another PR, came 139 seconds before it). The other 9 got the 👍 and no comment. No 👍 arrived alongside a findings review; the nearest findings reviews came 5–8 minutes earlier, in the round before a fix push. The 👍 names no commit, and GitHub keeps one per user and type, so it cannot mark a later clean round.
+Codex has 👍 on 29 PRs. On 20 the clean comment came 0–4 seconds after the 👍 (one outlier came 139 seconds before it). The other 9 got the 👍 and no comment. No 👍 arrived alongside a findings review; the nearest findings reviews came 5–8 minutes earlier, in the round before a fix push. The 👍 names no commit, and GitHub keeps one per user and type, so it cannot mark a later clean round.
 
 [skills#13](https://github.com/zanellig/skills/pull/13), opened 2026-09-24 at 20:42:26 with Smart detect:
 
@@ -79,31 +79,31 @@ Repo trigger: Smart detect. On [skills#11](https://github.com/zanellig/skills/pu
 
 Of 87 human comments containing `@codex`, Codex's 👀 remains on 2, and no 👀 remains on any PR. So the bot usually removes 👀 when it responds. It removed the PR-level 👀 on [skills#13](#clean-rounds) too, replacing it with 👍. The two leftovers:
 
-- [another PR](https://github.com/REDACTED): a request pinned `62250c9` at 03:22:33. Three minutes later `2de567c` was pushed and [re-requested](https://github.com/REDACTED). The next review, at 03:31, read `2de567c`, and `62250c9` was never reviewed. The dropped request kept its 👀.
-- [another PR](https://github.com/REDACTED): answered by a review 8 minutes later, yet the 👀 stayed.
+- One PR: a request pinned commit A at 03:22:33. Three minutes later commit B was pushed and re-requested. The next review, at 03:31, read commit B, and commit A was never reviewed. The dropped request kept its 👀.
+- Another PR: answered by a review 8 minutes later, yet the 👀 stayed.
 
 The skill's rule still holds either way: an 👀 that outlives a full wait is stale.
 
 ## Thread replies
 
-64 plain replies (no `@codex`) in Codex-opened threads got 0 bot replies. Of 11 thread replies containing `@codex`, 10 got a bot reply; [another PR](https://github.com/REDACTED), from March, got none.
+64 plain replies (no `@codex`) in Codex-opened threads got 0 bot replies. Of 11 thread replies containing `@codex`, 10 got a bot reply, and the eleventh, from March, got none.
 
 Nothing here shows whether a thread mention bills code-review usage or task usage. The environment notices suggest tasks.
 
 ## Stale and duplicate reviews
 
-[another PR](https://github.com/REDACTED):
+One PR:
 
 | Time (UTC) | Event |
 | --- | --- |
-| 18:03:54 | `f028737` committed |
+| 18:03:54 | Commit A committed |
 | 18:05:38 | `@codex review` |
-| 18:14:59 | [Review of `f028737`](https://github.com/REDACTED) |
-| 18:19:40 | `4077ef0` committed (fixes) |
-| 18:19:48 | [`@codex review the latest fixes: …`](https://github.com/REDACTED), no SHA |
-| 18:28:54 | [Second review of `f028737`](https://github.com/REDACTED), the stale commit |
+| 18:14:59 | Review of commit A |
+| 18:19:40 | Commit B committed (fixes) |
+| 18:19:48 | `@codex review the latest fixes: …`, no SHA |
+| 18:28:54 | Second review of commit A, the stale commit |
 
-The unpinned request got a duplicate review of the old commit, and none of the fixes were reviewed. On another PR above, pinned requests got reviews of the head at request time: `2de567c` for the 03:25 request and `5ade630` for the 03:35 one.
+The unpinned request got a duplicate review of the old commit, and none of the fixes were reviewed. On the first PR under [Eyes reaction](#eyes-reaction), pinned requests got reviews of the head at request time: commit B for the 03:25 request and a later commit for the 03:35 one.
 
 ## Review latency
 

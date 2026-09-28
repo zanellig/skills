@@ -16,9 +16,11 @@ Use the label strings from `docs/agents/triage-labels.md`. When that file is mis
 1. **Build the pool.** The default pool is the open issues under the two labels:
 
    ```sh
-   gh issue list --state open --label <label> --limit 200 \
+   gh issue list --state open --label <label> --limit 1000 \
      --json number,title,labels,body,createdAt,assignees,milestone,blockedBy,blocking,closedByPullRequestsReferences
    ```
+
+   `--limit` caps the fetch. When a label returns exactly the limit, double it and rerun until it returns fewer.
 
    It leaves out issues assigned to someone other than the user and issues with an open blocker (a `blockedBy` entry or a `Blocked by #n` line in the body). Issues with an open PR in `closedByPullRequestsReferences` stay in: that PR is started work. For each one, read what the PR still needs to merge:
 

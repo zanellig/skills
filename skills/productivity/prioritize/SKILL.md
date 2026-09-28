@@ -22,7 +22,7 @@ Use the label strings from `docs/agents/triage-labels.md`. When that file is mis
 
    When a label returns exactly the limit, double it and rerun until it returns fewer.
 
-   It leaves out issues assigned to someone other than the user and issues with an open blocker (a `blockedBy` entry or a `Blocked by #n` line in the body). Issues with an open PR in `closedByPullRequestsReferences` stay in: that PR is started work. For each one, read what the PR still needs to merge:
+   It leaves out issues assigned to someone other than the user and issues with an open blocker. A blocker counts as open when its `blockedBy` node has `state: OPEN`, or, for a `Blocked by #n` line in the body, when `gh issue view <n> --json state` returns `OPEN`. Issues with an open PR in `closedByPullRequestsReferences` stay in: that PR is started work. For each one, read what the PR still needs to merge:
 
    ```sh
    gh pr view <n> --json isDraft,mergeable,reviewDecision,statusCheckRollup,latestReviews

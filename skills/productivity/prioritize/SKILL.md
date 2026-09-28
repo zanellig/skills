@@ -42,7 +42,7 @@ Use the label strings from `docs/agents/triage-labels.md`. When that file is mis
    7. The smaller scope, judged from the brief or the issue body.
    8. The oldest issue.
 
-4. **Verify the pick.** For an issue with an open PR, list what stands between the PR and merge: failing checks, unresolved review comments, conflicts, unmet acceptance criteria. For any other issue, check its brief, or its body when it has no brief, against the code. The files, functions, and behaviors it names must still exist, and the code must not already do what it asks (search by domain concept, as `/triage` does). If the issue is stale or the work is done, note it, drop the issue, and verify the next one. The step is done when one issue passes.
+4. **Verify the pick.** For an issue with an open PR, list what stands between the PR and merge: failing checks, unresolved review comments, conflicts, unmet acceptance criteria. For any other issue, check that the code does not already do what its brief, or its body when it has no brief, asks for (search by domain concept, as `/triage` does). If the work is done, note it, drop the issue, and verify the next one. The step is done when one issue passes.
 
 5. **Recommend.** Reply in this shape, then end the turn and let the user decide whether to start:
 
@@ -56,7 +56,7 @@ Use the label strings from `docs/agents/triage-labels.md`. When that file is mis
    - #38 Title: why it lost.
    - #45 Title: why it lost.
 
-   Skipped: 3 blocked, 1 assigned to someone else, 1 stale brief.
+   Skipped: 3 blocked, 1 assigned to someone else, 1 already done.
    ```
 
 When the pool is empty, say so, list what the scope left out, and point the user to `/triage`.

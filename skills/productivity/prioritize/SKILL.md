@@ -1,62 +1,50 @@
 ---
 name: prioritize
-description: Pick the one triaged issue to work on next and say why.
-argument-hint: "[narrowing or widening: labels, milestone, issue numbers, states]"
+description: Pick the most important open PR or issue to work on next and say why.
+argument-hint: "[scope: labels, milestone, PR or issue numbers, states]"
 disable-model-invocation: true
 ---
 
 # Prioritize
 
-Read the triaged issues on the project issue tracker and decide which one the user works on next. The answer is one issue, not a menu. You should only read the tracker of the project the user is working on. Labels, comments, and issue state stay as they are.
+Choose one next unit of work in the current project: continue an open PR or start an issue. With no arguments, compare all open PRs and issues. Recommend the next action; invoking this skill alone leaves code and tracker state unchanged.
 
 Use the label strings from `docs/agents/triage-labels.md`. When that file is missing, use the canonical names `ready-for-agent` and `ready-for-human`.
 
 ## Process
 
-1. **Build the pool.** The default pool is the open issues under the two labels:
+1. **Build the pool.** Read open issues and PRs independently, including untriaged issues and PRs without linked issues:
 
    ```sh
-   gh issue list --state open --label <label> --limit 1000 \
-     --json number,title,labels,body,createdAt,assignees,milestone,blockedBy,blocking,closedByPullRequestsReferences
+   gh issue list --state open --limit 1000 \
+     --json number,title,url,labels,body,createdAt,assignees,milestone,blockedBy,blocking
+   gh pr list --state open --limit 1000 \
+     --json number,title,url,labels,body,createdAt,assignees,milestone,isDraft,closingIssuesReferences
    ```
 
-   When a label returns exactly the limit, double it and rerun until it returns fewer.
+   When either list returns exactly the limit, double it and rerun until it returns fewer. Use equivalent tracker tools when `gh` is unavailable.
 
-   It leaves out issues assigned to someone other than the user and issues with an open blocker. A blocker counts as open when its `blockedBy` node has `state: OPEN`, or, for a `Blocked by #n` line in the body, when `gh issue view <n> --json state` returns `OPEN`. Issues with an open PR in `closedByPullRequestsReferences` stay in: that PR is started work. For each one, read what the PR still needs to merge:
+   Group a PR and its linked issues as one deliverable. Also check body references for relationships missing from closing links. Keep independent PRs in the pool. Readiness labels describe the next action, rather than determine importance.
 
-   ```sh
-   gh pr view <n> --json isDraft,mergeable,reviewDecision,statusCheckRollup,latestReviews
-   ```
+   By default, leave work assigned to someone other than the user to its owner. User-specified scope overrides the default. Keep blocked work visible to identify its prerequisites; recommend a next action that can make progress. An issue blocker counts only while its state is `OPEN`, including body references such as `Blocked by #n`. For stacked PRs, verify that the prerequisite merged or its required changes otherwise landed.
 
-   The user can narrow the pool, for example to a label, a milestone, or a list of issues. They can also widen it, for example to `needs-triage` issues, blocked ones, or ones assigned to someone else. Their scope replaces the default wherever the two conflict. The step is done when the pool matches that scope.
+   The pool is complete when it covers the requested scope and related prerequisites.
 
-2. **Map the critical path.** For each issue in the pool, count the open issues it unblocks, directly or transitively, searching all open issues, not only the pool. The step is done when every issue has a count.
+2. **Rank by importance.** Read briefs and discussions for the contenders. Weigh the user's current goal, urgency, severity and impact, work unblocked directly or transitively across all open issues, and deadlines. Identify the highest-priority issue even when it needs triage. Recency, age, readiness labels, and small scope are secondary signals; explain any departure from explicit project priorities.
 
-3. **Rank.** Weigh the pool against these factors. The list gives their default order of importance. Depart from that order when the facts of this repo argue for it, and name the reason in the recommendation.
-   1. The goal the user stated for this session.
-   2. A bug that loses data, opens a security hole, or breaks a core user flow.
-   3. An open PR, weighted by how little it still needs: finishing started work closes an issue sooner than starting new work.
-   4. The longer critical path: the higher unblock count.
-   5. The milestone with the nearest due date.
-   6. `ready-for-agent` over `ready-for-human`, since an agent can run it AFK while the user works on something else.
-   7. The smaller scope, judged from the brief or the issue body.
-   8. The oldest issue.
+3. **Prefer finishing valuable work.** Among work of comparable importance, prefer continuing the most important actionable PR, using remaining effort to break ties. Resume the existing PR rather than recommend duplicate implementation. An urgent issue can outrank every open PR. If finishing a PR first enables or briefly precedes the highest-priority issue, justify the delay and name that issue as next. Recommend one PR, then reassess priorities; unrelated open PRs are not a prerequisite queue.
 
-4. **Verify the pick.** For an issue with an open PR, list what stands between the PR and merge: failing checks, unresolved review comments, conflicts, unmet acceptance criteria. For any other issue, check that the code does not already do what its brief, or its body when it has no brief, asks for (search by domain concept, as `/triage` does). If the work is done, note it, drop the issue, and verify the next one. The step is done when one issue passes.
+4. **Verify the pick.** For a PR, inspect its current diff, acceptance criteria, checks, review threads, conflicts, and dependencies. Name what remains before merge; green checks alone do not establish completion. For an issue, search the code by domain concept to see whether its brief or body is already satisfied. When triage or a human decision is needed, name that as the first action. Drop completed work from the recommendation and verify the next candidate. The step is done when one PR or issue has a concrete next action and evidence for its priority.
 
-5. **Recommend.** Reply in this shape, then end the turn and let the user decide whether to start:
+5. **Recommend.** Reply concisely in this shape, then end the turn:
 
    ```md
-   **Next: #42 Title** (`ready-for-agent`)
-   Why: what decided it, with the fact behind it ("unblocks #50, #51, #57").
-   Start: the first concrete move, such as "finish PR #61: fix the failing e2e check", the file to open, or "hand it to an agent".
-   Then: the issue this one clears the way for, when it unblocks something important.
+   Next: PR or issue #42, title and link.
+   Why: the deciding facts, including why it outranks the strongest alternative.
+   Start: the first concrete action and who can take it.
+   Then: the highest-priority issue to start promptly after this PR, if different.
 
-   Runner-ups:
-   - #38 Title: why it lost.
-   - #45 Title: why it lost.
-
-   Skipped: 3 blocked, 1 assigned to someone else, 1 already done.
+   Skipped: relevant blockers, other owners, or already completed work.
    ```
 
-When the pool is empty, say so, list what the scope left out, and point the user to `/triage`.
+When nothing can progress within scope, say what prevents it and name the decision or prerequisite needed.

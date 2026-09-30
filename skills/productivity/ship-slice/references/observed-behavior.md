@@ -49,7 +49,7 @@ A task summary starts `### Summary`, lists the changes Codex made, has a **Testi
 
 > Codex Review: Didn't find any major issues. Another round soon, please!
 >
-> **Reviewed commit:** `1996891037`
+> **Reviewed commit:** `<sha>`
 
 The sign-off after the first sentence varies (12 variants: `:+1:`, `Swish!`, `:rocket:`, `Bravo.`, …), so match only the prefix.
 

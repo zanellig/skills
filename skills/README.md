@@ -17,7 +17,7 @@
 - **[geze-mode](./productivity/geze-mode/SKILL.md)** — Geze's working style for non-trivial tasks.
 - **[hitl-handoff](./productivity/hitl-handoff/SKILL.md)** — Post a handoff comment on a PR or issue when agent work is done but acceptance criteria still need a human.
 - **[loop](./productivity/loop/SKILL.md)** — Claude Code's original /loop skill.
-- **[prioritize](./productivity/prioritize/SKILL.md)** — Pick the one triaged issue to work on next and say why.
+- **[prioritize](./productivity/prioritize/SKILL.md)** — Pick the most important open PR or issue to work on next and say why.
 - **[refined-loop](./productivity/refined-loop/SKILL.md)** — Schedule a prompt or slash command to run on a repeating schedule — every N minutes/hours/days, or at a fixed time of day.
 - **[ship-slice](./productivity/ship-slice/SKILL.md)** — Drive a slice from implementation through Codex review rounds to a merged PR.
 

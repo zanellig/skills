@@ -10,5 +10,5 @@ General workflow tools, not code-specific.
 - **[loop](./loop/SKILL.md)** — Claude Code's original /loop skill.
 - **[prioritize](./prioritize/SKILL.md)** — Pick the most important open PR or issue to work on next and say why.
 - **[refined-loop](./refined-loop/SKILL.md)** — Schedule a prompt or slash command to run on a repeating schedule — every N minutes/hours/days, or at a fixed time of day.
-- **[ship-slice](./ship-slice/SKILL.md)** — Drive a slice from implementation through Codex review rounds to a merged PR.
+- **[ship-slice](./ship-slice/SKILL.md)** — Implement a vertical slice, complete Codex review rounds, and merge the PR.
 <!-- END GENERATED SKILL REFERENCE -->

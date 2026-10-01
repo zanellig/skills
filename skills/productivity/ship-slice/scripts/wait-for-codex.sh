@@ -9,6 +9,8 @@
 #   [owner/repo] Default: current repo via `gh repo view`.
 #
 # Env: POLLS (default 15 sleeps), INTERVAL (default 60s per sleep).
+# REQUIRE_COMMIT=1 ignores clean reactions when an earlier activation may
+# still be running. Keep it enabled for the rest of a PR after any timeout.
 # Exits 0 once Codex responds (printing the commits it read and the findings)
 # or one poll after a clean-review thumbs-up,
 # 1 on timeout, 2 when a fresh eyes reaction shows a review still in flight,
@@ -35,6 +37,14 @@ gh api "repos/$REPO/pulls/$PR" --jq .number >/dev/null 2>&1 || {
 BOT="chatgpt-codex-connector[bot]"
 POLLS="${POLLS:-15}"
 INTERVAL="${INTERVAL:-60}"
+REQUIRE_COMMIT="${REQUIRE_COMMIT:-0}"
+case "$REQUIRE_COMMIT" in
+  0|1) ;;
+  *) echo "ERROR: REQUIRE_COMMIT must be 0 or 1" >&2; exit 3 ;;
+esac
+if [ "$REQUIRE_COMMIT" -eq 1 ]; then
+  echo "Waiting for a response naming the reviewed commit; clean reactions alone are ignored."
+fi
 
 line_count() {
   awk 'NF { count++ } END { print count + 0 }'
@@ -109,8 +119,8 @@ print_findings() {
     --jq ".[] | select(.user.login==\"$BOT\" and .content==\"+1\" and .created_at > \"$SINCE\") | {content, created_at}" 2>/dev/null || true
 }
 
-# A thumbs-up names no commit, but a fresh one postdates SINCE, captured just
-# before the push or request, so it covers that head.
+# A thumbs-up names no commit. The caller permits it only when no earlier
+# activation can still add a reaction; freshness alone cannot establish that.
 clean_thumbs_up() {
   print_findings
   echo "--- Clean: the thumbs-up covers the head pushed or requested at $SINCE ---"
@@ -134,7 +144,9 @@ for i in $(seq 0 "$POLLS"); do
     exit 4
   fi
   [ "$thumbs_up" -eq 0 ] || clean_thumbs_up
-  [ "$(count_reactions "+1")" -eq 0 ] || thumbs_up=1
+  if [ "$REQUIRE_COMMIT" -eq 0 ] && [ "$(count_reactions "+1")" -gt 0 ]; then
+    thumbs_up=1
+  fi
 done
 
 [ "$thumbs_up" -eq 0 ] || clean_thumbs_up

@@ -12,7 +12,7 @@ const NOTICE = "You have reached your Codex usage limits for code reviews.";
 // Stubs `gh` so each query the waiter makes answers from one scenario. The bot
 // issue-comment query splits on whether the body names a reviewed commit, so
 // the stub matches the `== true` / `== false` jq the script builds.
-function runWaiter({ review, inline, response, lateResponse, notice, lateNotice, thumbsUp, eyes, commentEyes, prReadable = true, polls = 1, since = SINCE } = {}) {
+function runWaiter({ review, inline, response, lateResponse, notice, lateNotice, thumbsUp, eyes, commentEyes, requireCommit = false, prReadable = true, polls = 1, since = SINCE } = {}) {
   const bin = mkdtempSync(join(tmpdir(), "wait-for-codex-"));
   const gh = join(bin, "gh");
   const emit = (on, text) => (on ? `echo '${text}'` : ":");
@@ -47,7 +47,7 @@ esac
     chmodSync(join(bin, "sleep"), 0o755);
 
     const result = Bun.spawnSync(["bash", SCRIPT, "3", since, "owner/repo"], {
-      env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, POLLS: String(polls), INTERVAL: "0" },
+      env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, POLLS: String(polls), INTERVAL: "0", REQUIRE_COMMIT: requireCommit ? "1" : "0" },
     });
     const slept = join(bin, "slept");
     result.sleeps = existsSync(slept) ? readFileSync(slept, "utf8").split("\n").length - 1 : 0;
@@ -82,6 +82,25 @@ test("a thumbs-up alone completes a clean round one poll later", () => {
 
 test("a thumbs-up keeps the wait open for the comment naming the reviewed commit", () => {
   const result = runWaiter({ thumbsUp: true, lateResponse: true });
+
+  expect(result.exitCode).toBe(0);
+  expect(result.stdout.toString()).toContain("abc1234567");
+  expect(result.stdout.toString()).not.toContain("Clean: the thumbs-up");
+});
+
+test("a late thumbs-up cannot complete a later round after a timeout", () => {
+  expect(runWaiter().exitCode).toBe(1);
+  // A delayed response can satisfy a retry while another activation remains
+  // in flight. That activation's reaction must not cover the next head.
+  expect(runWaiter({ review: true, requireCommit: true }).exitCode).toBe(0);
+  const result = runWaiter({ thumbsUp: true, requireCommit: true });
+
+  expect(result.exitCode).toBe(1);
+  expect(result.stdout.toString()).not.toContain("Clean: the thumbs-up");
+});
+
+test("requiring a commit still accepts a named response after a thumbs-up", () => {
+  const result = runWaiter({ thumbsUp: true, lateResponse: true, requireCommit: true });
 
   expect(result.exitCode).toBe(0);
   expect(result.stdout.toString()).toContain("abc1234567");

@@ -1,9 +1,9 @@
 # What the docs state
 
-Sources, read 2026-09-24:
+Sources:
 
 - OpenAI, [Review GitHub pull requests with Codex](https://learn.chatgpt.com/docs/third-party/github) (formerly `developers.openai.com/codex/integrations/github`, which now redirects there).
-- The "About Codex in GitHub" footer on every Codex review. All 143 footers in the [sweep](observed-behavior.md#sweep) carry the same text, from 2026-03-13 to 2026-09-24.
+- The "About Codex in GitHub" footer in [PR #15's review](https://github.com/zanellig/skills/pull/15#pullrequestreview-5361964355).
 
 ## Bot identity
 
@@ -22,7 +22,7 @@ The footer lists the events:
 >
 > If Codex has suggestions, it will comment; otherwise it will react with 👍.
 
-The footer never mentions pushes, yet a push alone activated a review on [skills#11](observed-behavior.md#a-push-activates-a-review). It reads as fixed text rather than the repo's actual trigger.
+The footer does not mention pushes.
 
 The three setting names (**On PR open**, **On every push**, **Smart detect**), the account-level setting with its per-repo override, and the claim that no API exposes the setting all come from the Codex settings page at `chatgpt.com/codex/settings/code-review`. No public doc covers them.
 
@@ -34,7 +34,7 @@ The three setting names (**On PR open**, **On every push**, **Smart detect**), t
 
 > After Codex posts a review, you can ask it to fix issues in the same pull request by leaving another comment: `@codex fix the P1 issue`. Codex starts a cloud chat with the pull request as context and can push a fix back to the branch when it has permission to do so.
 
-The docs mention only comments. They say nothing about a mention in the PR body; [skills#12](observed-behavior.md#task-summaries) shows what one does.
+The docs mention only comments. They say nothing about a mention in the PR body.
 
 ## Reactions
 
@@ -44,8 +44,6 @@ The docs mention only comments. They say nothing about a mention in the PR body;
 ## Severity
 
 > In GitHub, Codex flags only P0 and P1 issues so review comments stay focused on high-priority risks.
-
-In the sweep, findings also carry P2 badges, e.g. on skills#11 and skills#12.
 
 ## GitHub
 

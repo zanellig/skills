@@ -1,75 +1,68 @@
 ---
 name: ship-slice
-description: Drive a slice from implementation through Codex review rounds to a merged PR. Use when implementing a slice/issue that must pass @codex review before merge, when the user says "ship", "work the slice", "get this through review", or when addressing Codex review findings on a PR.
+description: Implement a vertical slice, complete Codex review rounds, and merge the PR.
 argument-hint: "<slice issue or handoff path> [passes]"
 disable-model-invocation: true
 ---
 
-# Ship Slice
+# Ship slice
 
-The implement -> Codex review -> fixes -> follow-up review -> merge loop for a vertical slice. A **slice** is a thin,
-end-to-end piece of a larger spec/PRD that ships on its own. Reviews come from the GitHub bot `chatgpt-codex-connector[bot]` (shows as `chatgpt-codex-connector` in `gh pr view` JSON).
+Requires authenticated `gh` access and the Codex GitHub app installed.
 
 ## Process
 
-1. **Load the work.** Read the slice issue (`gh issue view <n>`) and its parent spec/PRD. If handed a handoff doc path, read that first. Confirm acceptance criteria before touching code. The second argument is the pass count, 3 when absent. A pass is one completed Codex review round; a notice or a task spends none. PR creation activates round 1 (step 6).
+1. **Load the work.** Read the handoff first if supplied, then the slice issue and parent spec/PRD. Establish acceptance criteria before coding. The second argument sets the review pass count, default 3. Read the repo's recorded review trigger; use a repo override or an account setting matching `gh api user -q .login`. For a missing, unscoped, or different-account setting, follow [review-trigger setup](references/workflow-details.md#review-trigger-setup).
 
-2. **Confirm the review trigger.** Codex activates reviews on one of three settings, set per account and overridable per repo: **On PR open**, **On every push**, or **Smart detect**. Which one is in force decides whether step 9 ever posts `@codex review`, and no API exposes it. When the repo's agents file already records it, use that, unless it is an `(account setting for @<login>)` and `gh api user -q .login` names a different account; then ask. A line with no scope predates the label, so ask once and rewrite it with its scope. Otherwise ask the user which setting applies and whether it is their account setting or a repo override, then write one line under a `Codex Code review settings` heading in `AGENTS.md` — or `CLAUDE.md` when the repo has no `AGENTS.md`. Tell the user only when you added the line, so an already-recorded setting passes in silence. Nest the heading one level below an existing code-review section, otherwise add it at `##`. Name the setting's scope, `(repo override)` or `(account setting for @<login>)`, so a contributor on another account knows whether the line applies to them. Step 4 commits the line, so the next agent reads it instead of asking again:
+2. **Implement and open the PR.** Implement to acceptance criteria. Every behavior change gets a test. Run the project's tests/checks, format, and commit by scope with conventional-commit messages, including any review-setting update. Push the implementation before opening the PR. Every push uses an explicit remote and branch, such as `git push origin <branch>`; verify `git ls-remote origin refs/heads/<branch>` equals `git rev-parse HEAD`. Title the PR `Slice <id>: <summary>`; reference the parent spec and name the issues it closes with closing keywords. Use "Codex" without an `@` in the body. Apply the activation rules below when creating the PR or making an authorized draft-to-ready transition. For an existing PR, resume its latest round for the remote head; if pending, choose a `SINCE` preceding that activity and wait.
 
-   ```markdown
-   ## Codex Code review settings
+3. **Complete review rounds.** Activate and wait according to the tables below. Validate each finding with reproducible evidence against the current scope and documented product direction. For broad review scopes, follow [delegated validation](references/workflow-details.md#delegated-validation); fix small, already-validated findings directly. Fix or file only validated, relevant findings, and explain other claims in their threads. Add or update tests for observable behavior changes or meaningful regression risks.
 
-   Review trigger: Smart detect (account setting for @<login>).
-   ```
+   Answer every finding in its own thread with the fix commit and change, or the substantive reason for no code change. Use [thread operations](references/workflow-details.md#thread-operations) to reply and resolve bot-opened threads. Hand human-opened threads to the user and stop. Keep replies plain; the bot reads them only when @-mentioned, and a mention starts an in-thread task that spends Codex usage. Escalate with `@codex` only when a later round repeats a declined finding.
 
-3. **Implement to acceptance criteria, with tests.** Every behavior change gets a test. Run the project's test/check suite and make it green. Format before committing.
+   Commit and push fixes using the push checks in step 2, then continue until Codex reports a clean round or the pass count is spent. After the last pass's fixes, obtain a review of the resulting head using the same activation rules. This final review consumes no pass and its findings do not block merge. Validate its findings as above; collect validated, relevant ones in one follow-up issue with links to their threads, then reply with the issue link and resolve those threads. The user can continue with `/ship-slice #<issue> <passes>`.
 
-4. **Commit and push.** Commit by scope with conventional-commit messages. Push with an **explicit remote and branch** — `git push origin <branch>`. A *bare* `git push` whose output is piped (e.g. `git push 2>&1 | tail`) can be swallowed by a shell wrapper: no output, exit 0, nothing on the remote. After any push that matters, verify it landed: `git ls-remote origin refs/heads/<branch>` must equal `git rev-parse HEAD`.
+4. **Verify and merge.** Require green CI, the current head reviewed under the response criteria below, and all review threads resolved. Route any CI fixes through step 3, since a new head needs review. Check with `gh pr checks <n>` and the thread query in [thread operations](references/workflow-details.md#thread-operations). Merge with `gh pr merge <n> --merge --delete-branch`, using `--squash` if the repo prefers it.
 
-5. **Open the PR.** Immediately before running `gh pr create`, capture `SINCE=$(date -u +%Y-%m-%dT%H:%M:%SZ)`. Title it `Slice <id>: <summary>`. The body references the parent spec and names the issues it closes with a closing keyword, so merging closes them. Write "Codex" without the `@` in the body; a mention there starts a task instead of the review. If an applicable policy opens the PR as a draft, creation does not activate review; capture a new `SINCE` immediately before the authorized transition to ready.
+5. **Close the work.** Check issue states after merge. Summarize delivery and its location on each issue, linking any follow-up issue. Close those still open, including umbrella and duplicate issues; comment on those GitHub already closed.
 
-6. **Treat PR creation as round 1.** Opening the PR activates the initial review, so let that one run. A second `@codex review` comment re-reviews the same commit and returns duplicate findings against the user's usage limits. Set `REQUIRE_COMMIT=0` for a new PR with one activation. When resuming an existing PR, start with `REQUIRE_COMMIT=1` unless the history proves that every earlier activation finished before the current one began. Inspect existing Codex activity and resume from the latest round for the current remote head. If no response exists yet, capture a timestamp that precedes the pending review activity and wait for its response without requesting another review.
+## Review activation
 
-7. **Wait for the response** (background command — it sleeps): `REQUIRE_COMMIT="$REQUIRE_COMMIT" scripts/wait-for-codex.sh <n> "$SINCE"` prints the commits Codex read, the review body, inline findings (comment id, path:line), issue comments, and any clean-review 👍. Act on the exit code, and keep the same `SINCE` for every rerun within a round:
+Use one normal activation per round. A recovery request after a timeout can overlap a slow review; use the commit requirement below so its late reaction cannot cover a newer head. Duplicate requests spend usage limits. Immediately before the activating event, capture `SINCE=$(date -u +%Y-%m-%dT%H:%M:%SZ)`; keep it for every wait rerun in that round.
 
-   | Exit | Meaning | Do |
-   | --- | --- | --- |
-   | 0 | A genuine response arrived. | Go to step 8. |
-   | 1 | Timeout. A timeout is never zero findings. | Set `REQUIRE_COMMIT=1` for the rest of this PR before any retry or push. Under **On PR open**, activate the next round (step 9). Under **On every push**, rerun once, then hand off. Under **Smart detect**, the push may have been skipped, so use step 9's pinned request with the commit requirement enabled. |
-   | 2 | A fresh 👀 means the review is in flight. | Rerun once. A second exit 2 means the reaction is stale, because the bot can leave it on a request it dropped; treat that as exit 1. |
-   | 3 | The repo or PR could not be read. | Repair `gh` auth or the arguments, then rerun. |
-   | 4 | Codex posted a **notice** instead of a review (usage limit, missing environment). | Stop. Report the notice and hand off. When the notice is a task summary instead, an `@codex` mention started a task, so the review never started: activate the round with step 9's pinned request. |
+| Event | Activation |
+| --- | --- |
+| New PR opened for review | Creation activates round 1. |
+| Draft PR | The authorized ready transition activates round 1. |
+| Fix push under On every push or Smart detect | The push activates the round. Wait before considering a request. |
+| Fix push under On PR open | Post the pinned request below after pushing. |
+| All findings declined, with no fix commit to push | Post one pinned request containing the justifications. |
+| Smart detect skipped a push, or a task summary arrived instead of a review | Post one pinned request. |
+| Response names a stale commit | Re-request pinned to the current head. The intended round never happened. |
 
-   A timeout can leave an earlier activation running even after another response arrives. With `REQUIRE_COMMIT=1`, the waiter ignores reactions alone and requires a response naming the reviewed commit. Keep this mode for every later wait on the PR, including CI-fix pushes. If only a reaction arrives, leave the PR open and hand off for verification of the reviewed commit.
+A pinned request uses a fresh `SINCE` and the verified remote head:
 
-   A notice means the round never ran, so the commit carries no review and the PR stays open. Requesting again reproduces the notice until the underlying limit clears.
+```bash
+gh pr comment <n> --body "@codex review the latest fixes on commit <sha>: <fixes or substantive reasons for no code change>."
+```
 
-8. **Address every finding, in its own thread.** Fix each actionable finding. Add or update tests when the finding changes observable behavior or exposes a meaningful regression risk; add a regression test where it earns its place, not once per finding. Answer each finding where it was raised with `gh api repos/<owner>/<repo>/pulls/<n>/comments/<id>/replies -f body="Fixed in <sha>: <what changed>"`, using the comment id the waiter printed. Name the fix commit, or the substantive reason the finding requires no code change. Then resolve the thread with the GraphQL `resolveReviewThread` mutation on its thread id. The step 10 query prints each id with the thread's author. Resolve only threads `chatgpt-codex-connector` opened. A thread a person opened stays open for that reviewer, so stop and hand it to the user. **The bot reads a reply only when it is @-mentioned.** A plain reply is for the human record and for step 10's gate; `@codex` anywhere in the body starts a task that answers in-thread and spends the user's Codex usage. Fixes always go in plain replies. A finding you are declining to change routes by trigger, so that the round keeps one activation: under **On PR open** the justification rides in step 9's review request; under **On every push** and **Smart detect** it stays a plain reply and the push carries the round, unless every finding is declined and there is no fix commit to push, in which case use step 9's single pinned review request. Escalate to `@codex` in the thread only when a later round raises the same finding again.
+For declined findings, include the justification in an On PR open request; under On every push or Smart detect, keep it in the plain thread reply unless the all-declined row applies. Re-review a SHA with a completed, identifiable review only with a new substantive justification for a finding requiring no code change.
 
-9. **Loop.** Push a new head only after the current wait returns a response for that head or a notice. A timeout does not resolve an activation; apply step 7's commit requirement before retrying or pushing, so a late 👍 cannot be credited to a later head. Capture `AUTO_SINCE=$(date -u +%Y-%m-%dT%H:%M:%SZ)`, then push fixes and verify the remote SHA as in step 4. Under **On every push** and **Smart detect** the push itself activates the round, so wait it out with the waiter from `AUTO_SINCE` (step 7). Posting `@codex review` there spawns a second review session against the user's usage limits. Use one pinned request under **On PR open**, after a **Smart detect** timeout (step 7), or for an all-declined round with no fix commit to push. A timeout fallback can overlap a slow review. To request a review, capture `SINCE=$(date -u +%Y-%m-%dT%H:%M:%SZ)` and post one pinned comment: `gh pr comment <n> --body "@codex review the latest fixes on commit <sha>: <what each finding's fix did or why no code change is appropriate>."` Codex reviews the commit as of request time, so always pin the SHA. A SHA with a completed, identifiable review may be reviewed again only when the new request contains a substantive justification for a finding that requires no code change.
+## Review response
 
-   **Check which commit was reviewed.** The waiter prints the commits Codex read. A 👍 alone names none and can complete a round only with `REQUIRE_COMMIT=0`. When a named commit differs from the SHA you pushed, Codex reviewed a stale commit and the round covered none of your fixes. Set `REQUIRE_COMMIT=1` for the rest of this PR before re-requesting with the SHA pinned.
+Use `REQUIRE_COMMIT=0` for a new PR with one activation. On a resumed PR, use `REQUIRE_COMMIT=1` unless its history proves every earlier activation finished before the current one began. After any timeout or stale response, keep `REQUIRE_COMMIT=1` for the rest of the PR, including CI-fix waits. In this mode, reactions alone provide no head coverage; require a response naming the reviewed commit, or leave the PR open and hand off for commit verification.
 
-   **End the loop.** Only a genuine Codex response completes a round, and Codex decides when a round is clean, whatever you fixed or declined. Stop when Codex's `Didn't find any major issues` comment names the SHA you pushed or the waiter reports a clean 👍 with `REQUIRE_COMMIT=0`, or when the pass count is spent. When the pass count runs out after you push fixes, wait out the review that push activates before merging; under **On PR open**, request it with the pinned comment. That final review is not a pass, and its findings do not block the merge. File them in one follow-up issue with `gh issue create`, listing each finding with a link to its thread. Reply on each thread with the issue link, then resolve it. The user can run `/ship-slice #<issue> <passes>` on it.
+Run `REQUIRE_COMMIT="$REQUIRE_COMMIT" scripts/wait-for-codex.sh <n> "$SINCE"` in the background. Use its printed review, findings, comment ids, and reviewed commits.
 
-10. **CI green, head reviewed, threads closed.** `gh pr checks <n>`. Push CI fixes through step 9, since each push makes a new head that needs its own review. Confirm the waiter's latest output lists `git rev-parse HEAD` among the commits Codex read, or reports a clean 👍 with `REQUIRE_COMMIT=0` from a wait that began at HEAD's push or request, so Codex has reviewed what you merge. Then confirm every review thread is resolved, so the merge carries a fix or an answer for each finding. The query prints each open thread's id, author, and path:
+| Exit | Action |
+| --- | --- |
+| 0: response | Confirm head coverage below, then address findings or accept a clean round. |
+| 1: timeout | Enable the commit requirement before any retry or push. On PR open: activate the next round with a pinned request. On every push: rerun once, then hand off. Smart detect push round: request a pinned review; the automatic review may still be running. A timeout provides no clean-review evidence. |
+| 2: pending 👀 | Rerun once, then handle a second exit 2 as exit 1. Use the same bound for directly observed 👀; its age does not prove an activation ended. |
+| 3: unreadable repo/PR | Repair `gh` authentication or arguments, then rerun. |
+| 4: notice | Report usage-limit or missing-environment notices, keep the PR open, and hand off until the cause clears. For a task summary, use the task-summary activation instead. |
 
-   ```bash
-   gh api graphql --paginate \
-     -f query='query($o:String!,$r:String!,$n:Int!,$endCursor:String){repository(owner:$o,name:$r){pullRequest(number:$n){
-       reviewThreads(first:100,after:$endCursor){pageInfo{hasNextPage endCursor} nodes{id isResolved path comments(first:1){nodes{author{login}}}}}}}}' \
-     -f o=<owner> -f r=<repo> -F n=<n> \
-     --jq '.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved==false) | "\(.id) \(.comments.nodes[0].author.login) \(.path)"'
-   ```
+Head coverage requires the waiter to list the current SHA among the reviewed commits, or report a clean 👍 with `REQUIRE_COMMIT=0` for the head pushed or requested at `SINCE`. A 👍 names no commit; the waiter handles its attribution. A stale response enables the commit requirement before the stale-commit activation. Push a new head only after the current wait returns a response covering that head or a notice; a timeout does not resolve an activation.
 
-11. **Merge.** `gh pr merge <n> --merge --delete-branch` (swap `--squash` if the repo prefers it).
+Only a genuine response covering the intended head completes a pass; notices and tasks consume none. A clean round is Codex's `Didn't find any major issues` comment naming that SHA, or the waiter's clean 👍 with `REQUIRE_COMMIT=0`, regardless of fixes or declined findings. GitHub retains one reaction per user and type, so a later clean round may add no fresh 👍; use the timeout rules when that happens.
 
-12. **Close issues.** A closing keyword in the PR body may have closed the slice issue on merge already, so check state before acting. Summarize what was delivered and where on each issue either way, and link the follow-up issue when step 9 filed one: `gh issue close <n> --comment "..."` for what is still open, `gh issue comment <n> --body "..."` for what GitHub closed. The keyword only reaches the issues the PR body names, so close umbrella and duplicate issues yourself.
-
-## Notes
-
-- **Review activations:** Opening the PR activates round 1. Each later round is activated by the push under **On every push** and **Smart detect**, and by one `@codex review` comment under **On PR open** after a Smart detect timeout (step 7). A fresh 👀 reaction means a round is already running, whether the waiter reports it (exit 2) or you spot it in `gh pr view`; let it resolve into a review, comment, or 👍. The bot usually removes the reaction when it responds but can leave it on a request it dropped, so an 👀 that outlives a full wait can be stale. Its age does not prove the task ended; apply step 7's commit requirement after a timeout. A second request re-reviews the same commit and burns usage limits on duplicate findings.
-- Run `wait-for-codex.sh` as a background command; its `sleep` loop would otherwise block the turn.
-- Codex may answer as a PR review, inline PR comments, an issue comment, or a 👍 reaction on the PR — the script checks those four. With `REQUIRE_COMMIT=0`, the waiter polls once more after a 👍 for the `Reviewed commit:` comment, then reports the reaction alone as clean. With `REQUIRE_COMMIT=1`, the reaction alone never completes the wait. Filter by `user.login == "chatgpt-codex-connector[bot]"` and a `SINCE` timestamp. **Reviews and clean-review comments name the commit they read** (`Reviewed commit: <sha>`); a bot comment without that marker is a notice.
-- A 👍 lands on the PR itself, and GitHub keeps one reaction of each type per user, so a later round that answers only with a 👍 may show nothing new; its wait times out and step 7 handles it as exit 1. The `Reviewed commit:` comment is the reliable clean-round signal.
-- Requires the GitHub CLI (`gh`) authenticated for the repo, with the Codex GitHub app installed.
+Before changing a Codex behavior claim, consult the documented sources in [references/README.md](references/README.md).

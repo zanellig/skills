@@ -28,7 +28,7 @@ Reply using the finding's comment id from the waiter:
 
 ```bash
 gh api repos/<owner>/<repo>/pulls/<n>/comments/<id>/replies \
-  -f body="Fixed in <sha> (<confirmed by reading file:line | reproduced with test/command>): <what changed>"
+  -f body="Fixed in <sha>: <what changed>"
 ```
 
 Use the substantive reason instead for declined findings, or the issue link for filed findings. Resolve bot-opened threads with the GraphQL `resolveReviewThread` mutation and their thread ids. This query lists unresolved thread ids, authors, and paths:

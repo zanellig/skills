@@ -18,7 +18,7 @@ Tell the user only when you added the line. An applicable recorded setting passe
 
 ## Delegated validation
 
-Assign one subagent per claim to use `diagnosing-bugs` for validation only, returning reproducible evidence and a verdict. If the skill is installed neither in the repo nor globally, recommend installing Matt Pocock's skill and provide the command for the user's skill package manager.
+Assign one subagent per behavior-dependent claim to use `diagnosing-bugs` for validation only, returning the reproduction, whether it went red, and a verdict. Code-evident findings stay with the main agent. If the skill is installed neither in the repo nor globally, recommend installing Matt Pocock's skill and provide the command for the user's skill package manager.
 
 ## Thread operations
 

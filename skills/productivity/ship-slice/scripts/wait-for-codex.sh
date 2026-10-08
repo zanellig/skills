@@ -31,10 +31,10 @@ if ! REPO="${3:-$(gh repo view --json nameWithOwner --jq .nameWithOwner)}"; then
   echo "ERROR: cannot resolve the repo. Run inside it or pass owner/repo." >&2
   exit 3
 fi
-HEAD_SHA=$(gh api "repos/$REPO/pulls/$PR" --jq .head.sha 2>/dev/null) && [ -n "$HEAD_SHA" ] || {
+if ! HEAD_SHA=$(gh api "repos/$REPO/pulls/$PR" --jq .head.sha 2>/dev/null) || [ -z "$HEAD_SHA" ]; then
   echo "ERROR: cannot read $REPO#$PR. Check gh auth and the PR number." >&2
   exit 3
-}
+fi
 BOT="chatgpt-codex-connector[bot]"
 SUMMARY="codex-pull-request-review-summary"
 POLLS="${POLLS:-15}"

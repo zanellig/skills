@@ -68,6 +68,8 @@ bot_comments() {
 # each review runs: "🔄 **Running** since <time>", then "✅ **Completed** <time>",
 # next to the short SHA it reads. Prints "<status> <time> <sha>", or nothing
 # when the PR has no summary, which leaves the other signals to decide.
+# The backticks in the sed pattern match the literal ones around the SHA.
+# shellcheck disable=SC2016
 summary_row() {
   gh api --paginate "repos/$REPO/issues/$PR/comments" \
     --jq ".[] | select(.user.login==\"$BOT\" and (.body | contains(\"$SUMMARY\"))) | .body" 2>/dev/null |

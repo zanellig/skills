@@ -4,6 +4,7 @@ Sources:
 
 - OpenAI, [Review GitHub pull requests with Codex](https://learn.chatgpt.com/docs/third-party/github) (formerly `developers.openai.com/codex/integrations/github`, which now redirects there).
 - The "About Codex in GitHub" footer in [PR #15's review](https://github.com/zanellig/skills/pull/15#pullrequestreview-5361964355).
+- The review summary comment Codex keeps on each PR, first seen on 2026-10-05.
 
 ## Bot identity
 
@@ -40,6 +41,23 @@ The docs mention only comments. They say nothing about a mention in the PR body.
 
 - 👀: "Wait for Codex to react (👀) and post a review." The docs don't say whether the reaction is removed afterwards.
 - 👍: the settings page reads "Codex automatically suggests improvements (or reacts with 👍)", and the footer reads "otherwise it will react with 👍."
+
+## Review summary
+
+Codex posts one issue comment per PR, marked `<!-- codex-pull-request-review-summary -->`, and edits it as each review runs. The comment's `created_at` stays fixed; `updated_at` and its GraphQL `userContentEdits` record each change. The code-review row names the short SHA under review and moves through two states:
+
+```
+| 📝 **Code Review** | 🔄 **Running** since <relative-time datetime="…">…</relative-time> | `7093558` | New commits |
+| 📝 **Code Review** | ✅ **Completed** <relative-time datetime="…">…</relative-time> | `7093558` | New commits |
+```
+
+Its footer reads:
+
+> Codex reacts with 👀 while any review is running, comments if it has suggestions, and reacts with 👍 once all reviews finish with no findings.
+
+The footer also lists `@codex security review` among the triggers.
+
+Observed on 2026-10-08 across 7 PRs in one private repo: only `Running` and `Completed`, with the triggers `PR opened` and `New commits`. In the 5 rounds with full edit history, the review and its inline findings landed 3 to 5 seconds before `Completed`, and the one clean round's 👍 landed 4 seconds after it. None of those rounds came from an `@codex review` comment or ended in a notice.
 
 ## Severity
 

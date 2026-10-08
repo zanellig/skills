@@ -55,12 +55,13 @@ line_count() {
 # Every genuine Codex response names the commit it read. A bot issue comment
 # without that marker is a notice (usage limit, missing environment), not a
 # review; the review summary also lacks it and is read by summary_row instead.
-# $1 selects which of the two to return, $2 the field to emit.
+# $1 selects which of the two to return, $2 the field to emit. Fails when the
+# query does, so each caller decides whether an unreadable answer matters.
 bot_comments() {
   gh api --paginate "repos/$REPO/issues/$PR/comments" \
     --jq ".[] | select(.user.login==\"$BOT\" and .created_at > \"$SINCE\"
            and (.body | contains(\"$SUMMARY\") | not)
-           and ((.body | test(\"Reviewed commit\")) == $1)) | .$2" 2>/dev/null || true
+           and ((.body | test(\"Reviewed commit\")) == $1)) | .$2" 2>/dev/null
 }
 
 # Codex keeps one summary comment per PR and rewrites its code-review row as
@@ -103,15 +104,17 @@ pending_on_comments() {
   done
 }
 
+# Fails when any query does: a completed summary means no findings only if
+# every place a finding could appear was read.
 count_new() {
   local reviews comments inline matches
   matches=$(gh api --paginate "repos/$REPO/pulls/$PR/reviews" \
-    --jq ".[] | select(.user.login==\"$BOT\" and .submitted_at > \"$SINCE\") | .id" 2>/dev/null || true)
+    --jq ".[] | select(.user.login==\"$BOT\" and .submitted_at > \"$SINCE\") | .id" 2>/dev/null) || return 1
   reviews=$(printf '%s\n' "$matches" | line_count)
-  matches=$(bot_comments true id)
+  matches=$(bot_comments true id) || return 1
   comments=$(printf '%s\n' "$matches" | line_count)
   matches=$(gh api --paginate "repos/$REPO/pulls/$PR/comments" \
-    --jq ".[] | select(.user.login==\"$BOT\" and .created_at > \"$SINCE\") | .id" 2>/dev/null || true)
+    --jq ".[] | select(.user.login==\"$BOT\" and .created_at > \"$SINCE\") | .id" 2>/dev/null) || return 1
   inline=$(printf '%s\n' "$matches" | line_count)
   echo $(( reviews + comments + inline ))
 }
@@ -124,7 +127,7 @@ print_findings() {
       --jq ".[] | select(.user.login==\"$BOT\" and .submitted_at > \"$SINCE\") | .commit_id" 2>/dev/null || true
     gh api --paginate "repos/$REPO/pulls/$PR/comments" \
       --jq ".[] | select(.user.login==\"$BOT\" and .created_at > \"$SINCE\") | .commit_id" 2>/dev/null || true
-    bot_comments true body | { grep -io 'reviewed commit.*' || true; }
+    { bot_comments true body || true; } | { grep -io 'reviewed commit.*' || true; }
   } | sort -u
   echo "--- Review summaries (state / body) ---"
   gh api --paginate "repos/$REPO/pulls/$PR/reviews" \
@@ -133,7 +136,7 @@ print_findings() {
   gh api --paginate "repos/$REPO/pulls/$PR/comments" \
     --jq ".[] | select(.user.login==\"$BOT\" and .created_at > \"$SINCE\") | {id, path, line, body}" 2>/dev/null || true
   echo "--- Issue comments ---"
-  bot_comments true body
+  bot_comments true body || true
   echo "--- Clean-review reactions ---"
   gh api --paginate "repos/$REPO/issues/$PR/reactions" \
     --jq ".[] | select(.user.login==\"$BOT\" and .content==\"+1\" and .created_at > \"$SINCE\") | {content, created_at}" 2>/dev/null || true
@@ -156,7 +159,9 @@ for i in $(seq 0 "$POLLS"); do
   # Codex posts findings seconds before it marks the row Completed, so reading
   # the row first lets count_new see every finding of a completed review.
   read -r row_status row_at row_sha <<<"$(summary_row)"
-  if [ "$(count_new)" -gt 0 ]; then
+  # An unreadable finding query yields no verdict; the next poll retries it.
+  new=$(count_new) || continue
+  if [ "$new" -gt 0 ]; then
     print_findings
     exit 0
   fi
@@ -165,7 +170,7 @@ for i in $(seq 0 "$POLLS"); do
     echo "--- Clean: the review summary shows $HEAD_SHA completed at $row_at ---"
     exit 0
   fi
-  notice=$(bot_comments false body)
+  notice=$(bot_comments false body || true)
   if [ -n "$notice" ]; then
     echo "BLOCKED: Codex posted a notice instead of a review on $REPO#$PR (since $SINCE)"
     printf '%s\n' "$notice"

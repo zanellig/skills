@@ -25,7 +25,7 @@ function summaryComment({ status, at = "2026-08-15T22:20:01.123456Z", sha = HEAD
 // Stubs `gh` so each query the waiter makes answers from one scenario. The bot
 // issue-comment query splits on whether the body names a reviewed commit, so
 // the stub matches the `== true` / `== false` jq the script builds.
-function runWaiter({ review, inline, response, lateResponse, notice, lateNotice, thumbsUp, eyes, commentEyes, summary, requireCommit = false, prReadable = true, polls = 1, since = SINCE } = {}) {
+function runWaiter({ review, inline, response, lateResponse, notice, lateNotice, thumbsUp, eyes, commentEyes, summary, findingsDown, requireCommit = false, prReadable = true, polls = 1, since = SINCE } = {}) {
   const bin = mkdtempSync(join(tmpdir(), "wait-for-codex-"));
   const gh = join(bin, "gh");
   const emit = (on, text) => (on ? `echo '${text}'` : ":");
@@ -44,7 +44,7 @@ case "$*" in
 esac
 case "$*" in
   *"pulls/3 "*) ${prReadable ? `echo ${HEAD}` : "exit 1"} ;;
-  *pulls/3/reviews*) ${emit(review, '{"state":"COMMENTED","commit_id":"abc1234567"}')} ;;
+  *pulls/3/reviews*) ${findingsDown ? "exit 1" : emit(review, '{"state":"COMMENTED","commit_id":"abc1234567"}')} ;;
   *pulls/3/comments*) ${emit(inline, '{"path":"a.ts","line":1,"commit_id":"def7654321"}')} ;;
   *issues/3/comments*"== true"*) ${emit(response, RESPONSE)}; ${emitLate(lateResponse, RESPONSE)} ;;
   # The summary names no reviewed commit, so it lands here unless excluded.
@@ -182,6 +182,13 @@ test("findings outrank the completed summary that follows them", () => {
 
   expect(result.exitCode).toBe(0);
   expect(result.stdout.toString()).toContain("abc1234567");
+  expect(result.stdout.toString()).not.toContain("Clean: the review summary");
+});
+
+test("a failed findings query keeps a completed summary from passing as clean", () => {
+  const result = runWaiter({ summary: { status: "Completed" }, findingsDown: true });
+
+  expect(result.exitCode).toBe(1);
   expect(result.stdout.toString()).not.toContain("Clean: the review summary");
 });
 

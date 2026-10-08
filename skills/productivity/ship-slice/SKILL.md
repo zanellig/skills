@@ -26,7 +26,7 @@ Requires authenticated `gh` access and the Codex GitHub app installed.
 
    Commit and push fixes using the push checks in step 2, then continue until Codex reports a clean round or the pass count is spent. After the last pass's fixes, obtain a review of the resulting head using the same activation rules. This final review consumes no pass and its findings do not block merge. Validate its findings as above; collect validated, relevant ones in one follow-up issue with links to their threads, then reply with the issue link and resolve those threads. The user can continue with `/ship-slice #<issue> <passes>`.
 
-4. **Verify and merge.** Require green CI, the current head reviewed under the response criteria below, and all review threads resolved. Route any CI fixes through step 3, since a new head needs review. Check with `gh pr checks <n>` and the thread query in [thread operations](references/workflow-details.md#thread-operations). Merge with `gh pr merge <n> --merge --delete-branch`, using `--squash` if the repo prefers it.
+4. **Verify and merge.** Require green CI, the current head reviewed under the response criteria below, and all review threads resolved. Route any CI fixes through step 3, since a new head needs review. Check with `gh pr checks <n>` and the thread query in [thread operations](references/workflow-details.md#thread-operations). Merge with `gh pr merge <n> --merge --delete-branch --match-head-commit <sha>`, passing the head the review covered so GitHub refuses the merge if the PR moved since; use `--squash` if the repo prefers it.
 
 5. **Close the work.** Check issue states after merge. Summarize delivery and its location on each issue, linking any follow-up issue. Close those still open, including umbrella and duplicate issues; comment on those GitHub already closed.
 
@@ -54,20 +54,20 @@ For declined findings, include the justification in an On PR open request; under
 
 ## Review response
 
-Use `REQUIRE_COMMIT=0` for a new PR with one activation. On a resumed PR, use `REQUIRE_COMMIT=1` unless its history proves every earlier activation finished before the current one began. After any timeout or stale response, keep `REQUIRE_COMMIT=1` for the rest of the PR, including CI-fix waits. In this mode, reactions alone provide no head coverage; require a response naming the reviewed commit, or leave the PR open and hand off for commit verification.
+Use `REQUIRE_COMMIT=0` for a new PR with one activation. On a resumed PR, use `REQUIRE_COMMIT=1` unless its history proves every earlier activation finished before the current one began. After any timeout or stale response, keep `REQUIRE_COMMIT=1` for the rest of the PR, including CI-fix waits. In this mode, reactions alone provide no head coverage; require a response or review summary naming the reviewed commit, or leave the PR open and hand off for commit verification.
 
-Run `REQUIRE_COMMIT="$REQUIRE_COMMIT" scripts/wait-for-codex.sh <n> "$SINCE"` in the background. Use its printed review, findings, comment ids, and reviewed commits.
+Wait on `REQUIRE_COMMIT="$REQUIRE_COMMIT" scripts/wait-for-codex.sh <n> "$SINCE"` as one blocking wait: it polls GitHub itself and prints only when it exits, so its exit is the next thing you act on. In Claude Code, run it with `run_in_background`. In Codex, run it from one `exec` cell as in [blocking wait in Codex](references/workflow-details.md#blocking-wait-in-codex). Use its printed review, findings, comment ids, and reviewed commits.
 
 | Exit | Action |
 | --- | --- |
 | 0: response | Confirm head coverage below, then address findings or accept a clean round. |
 | 1: timeout | Enable the commit requirement before any retry or push. On PR open: activate the next round with a pinned request. On every push: rerun once, then hand off. Smart detect push round: request a pinned review; the automatic review may still be running. A timeout provides no clean-review evidence. |
-| 2: pending 👀 | Rerun once, then handle a second exit 2 as exit 1. Use the same bound for directly observed 👀; its age does not prove an activation ended. |
+| 2: pending | The review summary shows the head running, or a fresh 👀 remains. Rerun once, then handle a second exit 2 as exit 1. Use the same bound for directly observed 👀; its age does not prove an activation ended. |
 | 3: unreadable repo/PR | Repair `gh` authentication or arguments, then rerun. |
 | 4: notice | Report usage-limit or missing-environment notices, keep the PR open, and hand off until the cause clears. For a task summary, use the task-summary activation instead. |
 
-Head coverage requires the waiter to list the current SHA among the reviewed commits, or report a clean 👍 with `REQUIRE_COMMIT=0` for the head pushed or requested at `SINCE`. A 👍 names no commit; the waiter handles its attribution. A stale response enables the commit requirement before the stale-commit activation. Push a new head only after the current wait returns a response covering that head or a notice; a timeout does not resolve an activation.
+Head coverage requires the waiter to list the current SHA among the reviewed commits, report the review summary's clean completion of it, or report a clean 👍 with `REQUIRE_COMMIT=0` for the head pushed or requested at `SINCE`. A 👍 names no commit; the waiter handles its attribution. A stale response enables the commit requirement before the stale-commit activation. Push a new head only after the current wait returns a response covering that head or a notice; a timeout does not resolve an activation.
 
-Only a genuine response covering the intended head completes a pass; notices and tasks consume none. A clean round is Codex's `Didn't find any major issues` comment naming that SHA, or the waiter's clean 👍 with `REQUIRE_COMMIT=0`, regardless of fixes or declined findings. GitHub retains one reaction per user and type, so a later clean round may add no fresh 👍; use the timeout rules when that happens.
+Only a genuine response covering the intended head completes a pass; notices and tasks consume none. A clean round is Codex's `Didn't find any major issues` comment naming that SHA, the waiter's clean review summary for that SHA, or its clean 👍 with `REQUIRE_COMMIT=0`, regardless of fixes or declined findings. On a PR without a review summary, a later clean round may add no fresh 👍, since GitHub retains one reaction per user and type; use the timeout rules when that happens.
 
 Before changing a Codex behavior claim, consult the documented sources in [references/README.md](references/README.md).

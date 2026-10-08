@@ -2,7 +2,7 @@
 
 Sources for the documented behavior used by `SKILL.md`.
 
-- [`codex-docs.md`](codex-docs.md): what OpenAI's docs and the bot's own review footer state.
+- [`codex-docs.md`](codex-docs.md): what OpenAI's docs, the bot's own review footer, and its review summary state.
 
 | Claim in `SKILL.md` | Status | Evidence |
 | --- | --- | --- |
@@ -13,3 +13,6 @@ Sources for the documented behavior used by `SKILL.md`.
 | A review with no suggestions gets a 👍 | Documented | [docs](codex-docs.md#reactions) |
 | 👀 means a review is in flight | Documented | [docs](codex-docs.md#reactions) |
 | GitHub keeps one reaction of each type per user | GitHub API behavior | [docs](codex-docs.md#github) |
+| The review summary shows each round Running, then Completed, naming the reviewed commit | Observed: 7 PRs | [summary](codex-docs.md#review-summary) |
+| Findings land seconds before the summary shows Completed | Observed: 5 rounds | [summary](codex-docs.md#review-summary) |
+| `exec_command` yields within 30 s; empty `write_stdin` polls block up to `background_terminal_max_timeout` | Codex source, `rust-v0.158.0` | [blocking wait](workflow-details.md#blocking-wait-in-codex) |

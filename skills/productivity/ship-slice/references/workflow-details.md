@@ -57,3 +57,15 @@ gh api graphql --paginate \
   -f o=<owner> -f r=<repo> -F n=<n> \
   --jq '.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved==false) | "\(.id) \(.comments.nodes[0].author.login) \(.path)"'
 ```
+
+## GitHub rate limits
+
+`gh pr checks`, `gh pr view`, and the thread query use GraphQL; `gh api rate_limit --jq .resources.graphql` shows what is left. While `remaining` is near 0, read through REST, which has its own limit:
+
+```bash
+gh api repos/<owner>/<repo>/pulls/<n> --jq '{sha: .head.sha, state: .mergeable_state}'
+gh api --paginate repos/<owner>/<repo>/commits/<sha>/check-runs --jq '.check_runs[] | "\(.name) \(.status) \(.conclusion)"'
+gh api repos/<owner>/<repo>/commits/<sha>/status --jq .state
+```
+
+CI is green only when every check run concluded `success`, `neutral`, or `skipped` and the combined status is `success`, or `pending` with no statuses reported. A read that failed or came back partial is not green. REST reports `behind` and `dirty` in lowercase. Resolving threads has no REST endpoint: wait for `reset` with one background command, then resolve.

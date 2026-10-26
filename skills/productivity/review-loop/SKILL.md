@@ -51,6 +51,6 @@ Run another round while rounds remain and a blocker or should is open, or a fix 
 
 ## 5. Stop
 
-Stop when the reviewer approves the current diff with no blocker or should open, or when the rounds run out. An item still disputed after two replies goes to the user, with each side in two or three lines. Running out of rounds is not approval.
+Stop when step 4 calls for no further round: no blocker or should is open after your regrading and the reviewer has seen every behavior change, or the rounds ran out. A `CHANGES` verdict holding only declined nits ends here too. An item still disputed after two replies goes to the user, with each side in two or three lines. Running out of rounds is not approval.
 
 Report the rounds, findings fixed, disputed, and declined, the follow-ups, and the diff size before and after. Leave the fixes uncommitted unless the user asked for a commit.

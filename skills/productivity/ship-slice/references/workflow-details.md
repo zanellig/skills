@@ -64,7 +64,8 @@ gh api graphql --paginate \
 
 ```bash
 gh api repos/<owner>/<repo>/pulls/<n> --jq '{sha: .head.sha, state: .mergeable_state}'
-gh api repos/<owner>/<repo>/commits/<sha>/check-runs --jq '.check_runs[] | "\(.name) \(.status) \(.conclusion)"'
+gh api --paginate repos/<owner>/<repo>/commits/<sha>/check-runs --jq '.check_runs[] | "\(.name) \(.status) \(.conclusion)"'
+gh api repos/<owner>/<repo>/commits/<sha>/status --jq .state
 ```
 
-REST reports `behind` and `dirty` in lowercase. Resolving threads has no REST endpoint: wait for `reset` with one background command, then resolve.
+CI is green only when every check run concluded `success`, `neutral`, or `skipped` and the combined status is `success`, or `pending` with no statuses reported. A read that failed or came back partial is not green. REST reports `behind` and `dirty` in lowercase. Resolving threads has no REST endpoint: wait for `reset` with one background command, then resolve.

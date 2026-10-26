@@ -57,3 +57,14 @@ gh api graphql --paginate \
   -f o=<owner> -f r=<repo> -F n=<n> \
   --jq '.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved==false) | "\(.id) \(.comments.nodes[0].author.login) \(.path)"'
 ```
+
+## GitHub rate limits
+
+`gh pr checks`, `gh pr view`, and the thread query use GraphQL; `gh api rate_limit --jq .resources.graphql` shows what is left. While `remaining` is near 0, read through REST, which has its own limit:
+
+```bash
+gh api repos/<owner>/<repo>/pulls/<n> --jq '{sha: .head.sha, state: .mergeable_state}'
+gh api repos/<owner>/<repo>/commits/<sha>/check-runs --jq '.check_runs[] | "\(.name) \(.status) \(.conclusion)"'
+```
+
+REST reports `behind` and `dirty` in lowercase. Resolving threads has no REST endpoint: wait for `reset` with one background command, then resolve.

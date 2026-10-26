@@ -1,7 +1,7 @@
 ---
 name: ship-slice
 description: Implement a vertical slice, complete Codex review rounds, and merge the PR.
-argument-hint: "<slice issue or handoff path> [passes]"
+argument-hint: "<slice issue or handoff path> [passes] [--no-merge]"
 disable-model-invocation: true
 ---
 
@@ -11,24 +11,44 @@ Requires authenticated `gh` access and the Codex GitHub app installed.
 
 ## Process
 
-1. **Load the work.** Read the handoff first if supplied, then the slice issue and parent spec/PRD. Establish acceptance criteria before coding. The second argument sets the review pass count, default 3. Read the repo's recorded review trigger; use a repo override or an account setting matching `gh api user -q .login`. For a missing, unscoped, or different-account setting, follow [review-trigger setup](references/workflow-details.md#review-trigger-setup).
+1. **Load the work.** Read the handoff first if supplied, then the slice issue and parent spec/PRD. Establish acceptance criteria before coding. The second argument sets the review pass count, default 3. `--no-merge` stops at the merge gate; see [no-merge mode](#no-merge-mode). Read the repo's recorded review trigger; use a repo override or an account setting matching `gh api user -q .login`. For a missing, unscoped, or different-account setting, follow [review-trigger setup](references/workflow-details.md#review-trigger-setup).
 
-2. **Implement and open the PR.** Implement to acceptance criteria. Every behavior change gets a test. Run the project's tests/checks, format, and commit by scope with conventional-commit messages, including any review-setting update. Push the implementation before opening the PR. Every push uses an explicit remote and branch, such as `git push origin <branch>`; verify `git ls-remote origin refs/heads/<branch>` equals `git rev-parse HEAD`. Title the PR `Slice <id>: <summary>`; reference the parent spec and name the issues it closes with closing keywords. Use "Codex" without an `@` in the body. Apply the activation rules below when creating the PR or making an authorized draft-to-ready transition. For an existing PR, resume its latest round for the remote head; if pending, choose a `SINCE` preceding that activity and wait.
+2. **Implement and open the PR.** Implement to acceptance criteria. Every behavior change gets a test. Run the project's tests/checks, format, and commit by scope with conventional-commit messages, including any review-setting update. Push the implementation before opening the PR. Every push uses an explicit remote and branch, such as `git push origin <branch>`; verify `git ls-remote origin refs/heads/<branch>` equals `git rev-parse HEAD`. Title the PR `Slice <id>: <summary>`; reference the parent spec and name the issues it closes with closing keywords. Use "Codex" without an `@` in the body. Note `git diff --shortstat origin/<base>...HEAD` when the PR opens. Apply the activation rules below when creating the PR or making an authorized draft-to-ready transition. For an existing PR, resume its latest round for the remote head; if pending, choose a `SINCE` preceding that activity and wait.
 
 3. **Complete review rounds.** Activate and wait according to the tables below. Triage each finding before changing code:
 
    - **Code-evident**: the cited lines are wrong with no runtime assumption. Confirm by reading them, then fix.
    - **Behavior-dependent**: the claim rests on runtime, data shape, config, environment, concurrency, or external services. Reproduce it first with a test, script, or command that goes red on the claim; it is confirmed once red, and the reproduction becomes its regression test. For several such findings, follow [delegated validation](references/workflow-details.md#delegated-validation).
 
-   A claim that holds only "probably" or "usually" is behavior-dependent. Weigh each confirmed finding's impact against the acceptance criteria, current scope, and documented product direction. Fix or file confirmed, relevant findings; explain the rest in their threads. Add or update tests for observable behavior changes or meaningful regression risks.
+   A claim that holds only "probably" or "usually" is behavior-dependent. Grade each confirmed finding yourself, whatever severity the bot gave it:
 
-   Answer every finding in its own thread with the fix commit and change, or the substantive reason for no code change. For behavior-dependent findings, name the reproduction or what failed to reproduce; the thread already anchors the cited lines. Use [thread operations](references/workflow-details.md#thread-operations) to reply and resolve bot-opened threads. Hand human-opened threads to the user and stop. Keep replies plain; the bot reads them only when @-mentioned, and a mention starts an in-thread task that spends Codex usage. Escalate with `@codex` only when a later round repeats a declined finding.
+   - **Blocker**: the intended case is wrong.
+   - **Should**: a real bug callers will hit within the acceptance criteria.
+   - **Nit**: everything else. Another code path, a rare case, or a small cost is a nit.
 
-   Commit and push fixes using the push checks in step 2, then continue until Codex reports a clean round or the pass count is spent. After the last pass's fixes, obtain a review of the resulting head using the same activation rules. This final review consumes no pass and its findings do not block merge. Validate its findings as above; collect validated, relevant ones in one follow-up issue with links to their threads, then reply with the issue link and resolve those threads. The user can continue with `/ship-slice #<issue> <passes>`.
+   Fix blockers and shoulds with the smallest change; prefer a fix that deletes or narrows code over a new guard, cache, helper, or option. Decline nits in their threads and collect them for the follow-up issue below: unneeded tests, guards for edge cases that do not matter, extra integration or compatibility, small performance costs. Add or update tests for observable behavior changes or meaningful regression risks.
 
-4. **Verify and merge.** Require green CI, the current head reviewed under the response criteria below, and all review threads resolved. Route any CI fixes through step 3, since a new head needs review. Check with `gh pr checks <n>` and the thread query in [thread operations](references/workflow-details.md#thread-operations). Merge with `gh pr merge <n> --merge --delete-branch --match-head-commit <sha>`, passing the head the review covered so GitHub refuses the merge if the PR moved since; use `--squash` if the repo prefers it.
+   Answer every finding in its own thread with the fix commit and change, or the substantive reason for no code change. For behavior-dependent findings, name the reproduction or what failed to reproduce; the thread already anchors the cited lines. Use [thread operations](references/workflow-details.md#thread-operations) to reply and resolve bot-opened threads. Hand human-opened threads to the user as in [stopping early](#stopping-early). Keep replies plain; the bot reads them only when @-mentioned, and a mention starts an in-thread task that spends Codex usage. Escalate with `@codex` only when a later round repeats a declined finding.
 
-5. **Close the work.** Check issue states after merge. Summarize delivery and its location on each issue, linking any follow-up issue. Close those still open, including umbrella and duplicate issues; comment on those GitHub already closed.
+   Before pushing fixes, compare `git diff --shortstat origin/<base>...HEAD` with its size when the PR opened. If review grew the diff, cut before pushing. Commit and push fixes using the push checks in step 2, then continue until Codex reports a clean round or the pass count is spent. After the last pass's fixes, obtain a review of the resulting head using the same activation rules. This final review consumes no pass and its findings do not block merge. Validate its findings as above; collect validated, relevant ones and the declined nits in one follow-up issue with links to their threads, then reply with the issue link and resolve those threads. The user can continue with `/ship-slice #<issue> <passes>`.
+
+4. **Verify and merge.** Require green CI, the current head reviewed under the response criteria below, all review threads resolved, and a branch that is neither behind nor conflicting. Route any CI fixes through step 3, since a new head needs review. Check with `gh pr checks <n>`, the thread query in [thread operations](references/workflow-details.md#thread-operations), and `gh pr view <n> --json mergeStateStatus`. On `BEHIND` or `DIRTY`, rebase onto the fetched base, rerun checks, and push with `--force-with-lease=<branch>:<previous head>`; the new head goes through step 3. When GraphQL is used up, read through REST as in [GitHub rate limits](references/workflow-details.md#github-rate-limits). Merge with `gh pr merge <n> --merge --delete-branch --match-head-commit <sha>`, passing the head the review covered so GitHub refuses the merge if the PR moved since; use `--squash` if the repo prefers it.
+
+5. **Close the work.** Check issue states after merge. Summarize delivery and its location on each issue, linking any follow-up issue. Close those still open, including umbrella and duplicate issues; comment on those GitHub already closed. Report the PR, the merge commit, findings fixed and declined, and the diff size at PR open and at merge.
+
+## No-merge mode
+
+With `--no-merge`, run steps 1–4 and stop at the merge gate. Never merge, enable auto-merge, or push to the base branch. Before each push, turn off auto-merge if it is on (`gh pr merge <n> --disable-auto`) and report that you did. At the gate, report one verdict:
+
+- **Ready**: step 4's gate passes. Print the merge command step 4 would run, pinned to the reviewed head.
+- **Waiting for approval**: only a required human approval remains.
+- **Blocked**: what fails the gate, what you tried, and what is needed.
+
+Skip step 5; the closing keywords close the issues when the user merges.
+
+## Stopping early
+
+A question in a plain message reads as a finished run. When you stop before the gate (a human-opened thread, a notice, a gate you cannot pass), ask with the harness's question tool, `AskUserQuestion` in Claude Code or `request_user_input` in Codex: the PR link, the blocker, and the options with your recommendation first. Without a question tool or an answer, leave the PR open and start the final message with the question.
 
 ## Review activation
 

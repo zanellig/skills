@@ -8,7 +8,9 @@ General workflow tools, not code-specific.
 - **[geze-mode](./geze-mode/SKILL.md)** — Geze's working style for non-trivial tasks.
 - **[hitl-handoff](./hitl-handoff/SKILL.md)** — Post a handoff comment on a PR or issue when agent work is done but acceptance criteria still need a human.
 - **[loop](./loop/SKILL.md)** — Claude Code's original /loop skill.
+- **[modernize](./modernize/SKILL.md)** — Rebase an aging PR onto its current base and decide whether it should still exist.
 - **[prioritize](./prioritize/SKILL.md)** — Pick the most important open PR or issue to work on next and say why.
 - **[refined-loop](./refined-loop/SKILL.md)** — Schedule a prompt or slash command to run on a repeating schedule — every N minutes/hours/days, or at a fixed time of day.
+- **[review-loop](./review-loop/SKILL.md)** — Review the current change with a fresh reviewer in this harness, fix what holds up, and repeat until it approves.
 - **[ship-slice](./ship-slice/SKILL.md)** — Implement a vertical slice, complete Codex review rounds, and merge the PR.
 <!-- END GENERATED SKILL REFERENCE -->

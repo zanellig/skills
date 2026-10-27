@@ -1,6 +1,7 @@
 ---
 name: commit
 description: Commit the current changes with a descriptive message. Use when saving completed work to version control.
+license: MIT
 ---
 
 # Commit Changes

@@ -1,6 +1,7 @@
 ---
 name: tanstack-nonblocking-loaders
 description: Make TanStack Start/Router navigations instant by turning blocking route loaders into non-blocking React Query cache warm-ups. Use when adding or editing a route, loader, or beforeLoad in a TanStack Start/Router app that uses React Query or TanStack DB; when configuring the router or QueryClient (preload, staleTime); or when diagnosing slow navigations — dead clicks, missing pending UI, refetch on back-navigation, duplicate server-fn calls.
+license: MIT
 ---
 
 # Non-blocking loaders in TanStack Start

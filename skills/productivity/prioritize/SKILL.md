@@ -3,6 +3,7 @@ name: prioritize
 description: Pick the most important open PR or issue to work on next and say why.
 argument-hint: "[scope: labels, milestone, PR or issue numbers, states]"
 disable-model-invocation: true
+license: MIT
 ---
 
 # Prioritize

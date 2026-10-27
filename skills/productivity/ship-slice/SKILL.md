@@ -3,6 +3,7 @@ name: ship-slice
 description: Implement a vertical slice, complete Codex review rounds, and merge the PR.
 argument-hint: "<slice issue or handoff path> [passes] [--no-merge]"
 disable-model-invocation: true
+license: MIT
 ---
 
 # Ship slice

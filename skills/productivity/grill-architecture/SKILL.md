@@ -1,6 +1,6 @@
 ---
 name: grill-architecture
-description: "Grill a plan or change with architecture in the design tree: premise, placement, reuse, seams and alternative shapes, recorded as ADRs."
+description: "Grill a plan or change with architecture in the design tree: premise, placement, reuse, seams and alternative shapes, recorded as ADRs. Use when designing a feature, a change, or a new project before a spec."
 ---
 
 Call the Skill tool for "grilling", "domain-modeling" and "codebase-design". Run the session as grilling describes; this skill adds architecture branches to the design tree and a rule for consultations.
@@ -9,7 +9,7 @@ Those three skills come from `mattpocock/skills`. If any is missing, stop and gi
 
 ## Before the first round
 
-Explore the code and ADRs the idea touches with a sub-agent. If a grilling session is already under way, add the branches to its current tree.
+Explore the code and ADRs the idea touches with a sub-agent, or several if the codebase is large or the idea is complex. If a grilling session is already under way, add the branches to its current tree.
 
 ## Architecture branches
 
@@ -24,7 +24,7 @@ Each branch is a question with a recommended answer grounded in that exploration
 
 ## Consultations
 
-When a review by another model or a sub-agent returns, quote verbatim every finding that challenges a premise or a settled decision, and put each one to the user as a question in the next round. Summarise the rest.
+When a review by another model or a sub-agent / delegate returns, quote verbatim every finding that challenges a premise or a settled decision, and put each one to the user as a question in the next round. Summarise the rest.
 
 ## Done
 

@@ -2,6 +2,7 @@
 name: geze-mode
 description: Geze's working style for non-trivial tasks.
 disable-model-invocation: true
+license: MIT
 ---
 
 # Geze mode

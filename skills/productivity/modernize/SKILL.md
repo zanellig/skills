@@ -3,6 +3,7 @@ name: modernize
 description: Rebase an aging PR onto its current base and decide whether it should still exist.
 argument-hint: "<pr>"
 disable-model-invocation: true
+license: MIT
 ---
 
 # Modernize

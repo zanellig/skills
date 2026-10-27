@@ -2,6 +2,7 @@
 name: hitl-handoff
 description: Post a handoff comment on a PR or issue when agent work is done but acceptance criteria still need a human. Use when a slice or issue is labeled `ready-for-human`, when the remaining work needs account access or a provider dashboard, or when the remaining work is manual verification.
 argument-hint: "<pr-or-issue-number>"
+license: MIT
 ---
 
 # HITL handoff

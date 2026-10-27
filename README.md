@@ -62,3 +62,7 @@ git config core.hooksPath .githooks
 ```
 
 CI runs `bun scripts/gen-reference.mjs --check` and fails if the committed reference is stale, so this stays a backstop rather than the thing you rely on.
+
+## License
+
+Skills written here are MIT, © Gonzalo Zanelli. Each ships its own `LICENSE`, because `bunx skills add` copies only the skill directory, and declares it in `license:` frontmatter. [modernize](./skills/productivity/modernize/LICENSE) keeps its upstream MIT license (Theo Browne). [unslop](./skills/misc/unslop/SKILL.md) is from poteto's pstack and keeps its upstream terms. [loop](./skills/productivity/loop/SKILL.md) is Anthropic's Claude Code skill and is not covered by this repo's license.

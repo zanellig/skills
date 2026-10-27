@@ -3,6 +3,7 @@ name: review-loop
 description: Review the current change with a fresh reviewer in this harness, fix what holds up, and repeat until it approves. Local only, no PR.
 argument-hint: "[base] [rounds]"
 disable-model-invocation: true
+license: MIT
 ---
 
 # Review loop

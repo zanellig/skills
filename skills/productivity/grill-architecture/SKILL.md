@@ -1,6 +1,7 @@
 ---
 name: grill-architecture
 description: "Grill a plan or change with architecture in the design tree: premise, placement, reuse, seams and alternative shapes, recorded as ADRs. Use when designing a feature, a change, or a new project before a spec."
+license: MIT
 ---
 
 Call the Skill tool for "grilling", "domain-modeling" and "codebase-design". Run the session as grilling describes; this skill adds architecture branches to the design tree and a rule for consultations.

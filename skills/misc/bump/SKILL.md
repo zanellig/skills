@@ -1,6 +1,7 @@
 ---
 name: bump
 description: Create and push semver version tags. Use when adding missing version tags, updating a package version, or tagging a commit.
+license: MIT
 ---
 
 # Version Tags

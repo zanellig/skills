@@ -1,6 +1,7 @@
 ---
 name: wrangler-handling
 description: Load this skill before performing or advising on any Cloudflare-related work, including using `wrangler`, inspecting or changing Cloudflare resources, authentication, configuration, development, deployment, debugging, or reviewing Cloudflare-related PR changes. This applies whether or not the user explicitly mentions Cloudflare or Wrangler.
+license: MIT
 ---
 
 You have a full-access Cloudflare account with `wrangler` installed and configured. You can use `wrangler` to manage all Cloudflare services.

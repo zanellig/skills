@@ -1,6 +1,7 @@
 ---
 name: sudo-escalation
 description: Use whenever a command needs root privileges — a `sudo` command, a write outside the user's home, a package install or removal, or a "permission denied" failure.
+license: MIT
 ---
 
 # Sudo escalation

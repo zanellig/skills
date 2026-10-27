@@ -1,0 +1,5 @@
+interface:
+  display_name: "Grill Architecture"
+  short_description: "Grill a plan with architecture in the design tree"
+policy:
+  allow_implicit_invocation: false

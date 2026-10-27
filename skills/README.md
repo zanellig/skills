@@ -15,6 +15,7 @@
 - **[code-review](./productivity/code-review/SKILL.md)** — Review the changes since a fixed point (commit, branch, tag, or merge-base) along two axes: Standards (does the code follow this repo's documented coding standards?) and Spec (does the code match what the originating issue/spec asked for?).
 - **[commit](./productivity/commit/SKILL.md)** — Commit the current changes with a descriptive message.
 - **[geze-mode](./productivity/geze-mode/SKILL.md)** — Geze's working style for non-trivial tasks.
+- **[grill-architecture](./productivity/grill-architecture/SKILL.md)** — Grill a plan or change with architecture in the design tree: premise, placement, reuse, seams and alternative shapes, recorded as ADRs.
 - **[hitl-handoff](./productivity/hitl-handoff/SKILL.md)** — Post a handoff comment on a PR or issue when agent work is done but acceptance criteria still need a human.
 - **[loop](./productivity/loop/SKILL.md)** — Claude Code's original /loop skill.
 - **[modernize](./productivity/modernize/SKILL.md)** — Rebase an aging PR onto its current base and decide whether it should still exist.

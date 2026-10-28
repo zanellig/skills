@@ -27,6 +27,7 @@
 - **[refined-loop](./productivity/refined-loop/SKILL.md)** — Schedule a prompt or slash command to run on a repeating schedule — every N minutes/hours/days, or at a fixed time of day.
 - **[review-loop](./productivity/review-loop/SKILL.md)** — Review the current change with a fresh reviewer in this harness, fix what holds up, and repeat until it approves.
 - **[ship-slice](./productivity/ship-slice/SKILL.md)** — Implement a vertical slice, complete Codex review rounds, and merge the PR.
+- **[writing-for-agents](./productivity/writing-for-agents/SKILL.md)** — Writing documents for agents.
 
 ## Web
 

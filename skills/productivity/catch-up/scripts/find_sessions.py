@@ -68,12 +68,14 @@ def user_turn(r, x):
     if x.startswith(NOISE):
         return
     r['user'].append(x)
+    r['prs'].update(PR_URL.findall(x))
     r['ended'] = 'waiting on the agent (no reply after the last user turn)'
 
 
 def agent_said(r, text):
     if text.strip():
         r['said'] = text
+        r['prs'].update(PR_URL.findall(text))
         r['ended'] = 'hit a usage limit' if LIMIT.search(text[:400]) else 'agent replied'
 
 
@@ -181,7 +183,7 @@ def find(d, limit, exclude, claude_root=f'{HOME}/.claude/projects', homes=None):
             found.append((os.path.getmtime(f), 'claude', f, None))
     for h in codex_homes() if homes is None else homes:
         files = glob.glob(f'{h}/sessions/**/rollout-*.jsonl', recursive=True) + glob.glob(f'{h}/archived_sessions/*.jsonl')
-        for f in sorted(files, key=os.path.getmtime, reverse=True)[:3000]:
+        for f in files:
             meta = codex_meta(f)
             src = (meta or {}).get('source')
             if meta and os.path.realpath(meta.get('cwd') or '/nonexistent') in dirs and not isinstance(src, dict):
@@ -199,6 +201,9 @@ def find(d, limit, exclude, claude_root=f'{HOME}/.claude/projects', homes=None):
         if len(out[src]) >= limit:
             continue
         r = claude(f) if src == 'claude' else codex(f, meta, names)
+        # Claude's folder names merge paths ("a.b" and "a_b"), so confirm the recorded cwd.
+        if src == 'claude' and os.path.realpath(r['cwd'] or '/nonexistent') not in dirs:
+            continue
         if r['id'] in exclude or not r['user'] or all(PING.match(u) for u in r['user']):
             continue
         out[src].append(r)

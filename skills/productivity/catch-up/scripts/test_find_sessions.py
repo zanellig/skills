@@ -49,9 +49,11 @@ class FindSessions(unittest.TestCase):
         proj = os.path.join(self.claude_root, fs.claude_dir(self.work))
         write(f'{proj}/real.jsonl', [claude_turn(self.work, 'Fix the login bug', '2026-10-21T10:00:00Z'),
                                      claude_reply('Committed.', '2026-10-21T10:01:00Z', bash='git commit -m x'),
-                                     claude_turn(self.work, 'Now open the PR', '2026-10-21T10:02:00Z'),
+                                     claude_turn(self.work, 'Now open the PR, see https://github.com/o/r/pull/3', '2026-10-21T10:02:00Z'),
                                      claude_reply("You've hit your session limit · resets 11pm", '2026-10-21T10:03:00Z')])
         write(f'{proj}/ping.jsonl', [claude_turn(self.work, 'Reply only with Hi', '2026-10-22T10:00:00Z')])
+        # Another project whose path mangles to the same Claude folder name.
+        write(f'{proj}/other.jsonl', [claude_turn(self.work.replace('my.repo', 'my_repo'), 'Private', '2026-10-24T10:00:00Z')])
         write(f'{proj}/me.jsonl', [claude_turn(self.work, 'where did we leave off?', '2026-10-23T10:00:00Z')])
         write(f'{self.codex}/sessions/2026/10/20/rollout-a.jsonl', codex_events('cx1', self.work, error='You have hit your usage limit.'))
         write(f'{self.codex}/sessions/2026/10/20/rollout-b.jsonl', codex_events('cx2', self.work, source={'subagent': 'review'}))
@@ -64,12 +66,13 @@ class FindSessions(unittest.TestCase):
     def run_find(self):
         return fs.find(self.work, 5, {'me'}, claude_root=self.claude_root, homes=[self.codex])[1]
 
-    def test_keeps_real_sessions_and_skips_pings_subagents_self_and_other_dirs(self):
+    def test_keeps_real_sessions_and_skips_pings_subagents_self_and_other_projects(self):
         self.assertEqual(sorted(r['id'] for r in self.run_find()), ['cx1', 'real'])
 
     def test_claude_session_summary(self):
         r = next(r for r in self.run_find() if r['id'] == 'real')
-        self.assertEqual(r['user'], ['Fix the login bug', 'Now open the PR'])
+        self.assertEqual(r['user'], ['Fix the login bug', 'Now open the PR, see https://github.com/o/r/pull/3'])
+        self.assertEqual(r['prs'], {'https://github.com/o/r/pull/3'})
         self.assertEqual(r['ended'], 'hit a usage limit')
         self.assertEqual(r['actions'], {'commit': 1})
 

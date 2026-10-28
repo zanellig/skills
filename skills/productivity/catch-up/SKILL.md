@@ -26,8 +26,12 @@ If the agent's last message doesn't say what remains, read the end of the subjec
 
 Transcripts record claims; the repo records facts. For every branch, worktree and PR the subject sessions touched, check:
 
-- `git status -sb` and `git log --oneline -5` in each worktree involved: uncommitted changes, commits not pushed, branch behind its base.
-- `gh pr view <n> --json state,mergeable,reviewDecision,statusCheckRollup,url` for each PR mentioned: open, merged or closed, checks, unresolved review.
+- `git fetch --prune` first, so the remote refs are current. If the fetch fails, say in the report that remote comparisons use stale refs.
+- In each worktree involved:
+  - `git status --short` for uncommitted changes.
+  - `git rev-list --left-right --count @{upstream}...HEAD` for commits behind and ahead of the remote branch. With no upstream, every commit on the branch is unpushed: `git log --oneline origin/<base>..HEAD`.
+  - `git rev-list --count HEAD..origin/<base>` for how far the branch is behind its base. The base is the PR's `baseRefName`, or the default branch from `git symbolic-ref refs/remotes/origin/HEAD`.
+- `gh pr view <full PR URL> --json state,baseRefName,mergeable,reviewDecision,statusCheckRollup` for each PR the script listed. The full URL keeps a PR from another repository from resolving to the same number here.
 - Handoff files in `${TMPDIR:-/tmp}` newer than the session (`ls -t ${TMPDIR:-/tmp}/*handoff*`).
 
 Where a transcript and the live state disagree, the live state wins; say so in the report. Done when every branch, worktree and PR from the subject sessions has a checked state.

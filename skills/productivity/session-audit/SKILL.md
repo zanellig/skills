@@ -11,7 +11,7 @@ Read the user's Claude Code and Codex history in chunks through delegates, merge
 
 **Orchestrator hygiene.** Raw session text stays in `out/` and `digests/`, and only delegates open those. Keep transcript text out of your own context: open no transcript, digest or `out/` file, and print none of it. A safeguard classifier once ended an orchestrator thread that had read security-themed sessions. Your inputs are `stats.json`, `status.json`, `check_cites.py` output and the findings files.
 
-Below, `<skill>` is this skill's directory. The scripts run with `python3 -I`. They read Claude history from `$HOME/.claude/projects` and Codex history from `$CODEX_HOME`, `~/.codex_p` and `~/.codex` (those that exist).
+Below, `<skill>` is this skill's directory. The scripts run with `python3 -I`.
 
 ## 1. Scope
 
@@ -23,13 +23,17 @@ Get from the user: the date range, the earlier review notes to compare against (
 python3 -I <skill>/scripts/extract.py <audit>/out --since YYYY-MM-DD --until YYYY-MM-DD [--health-check PREFIX ...] [--self-prompt PREFIX ...]
 ```
 
-Pass `--self-prompt` with the opening words of this thread's own prompt. `--health-check` replaces the default prompts. The script does three things that keep the counts honest:
+Pass `--self-prompt` with the opening words of this thread's own prompt. `--health-check` replaces the default prompts.
+
+**History homes.** The script finds homes by content: a Claude Code home holds `projects/*/*.jsonl`, a Codex home holds `sessions/YYYY/MM/DD/rollout-*.jsonl`. It reads `$CLAUDE_CONFIG_DIR`, `$CODEX_HOME`, and every such dir up to two levels under the hidden dirs of `$HOME` and the XDG config and data dirs, one per realpath. Repeat `--claude-home DIR` or `--codex-home DIR` to read only those homes for that harness. It prints each home with its session count and date range in the audited range; a home with 0 sessions adds nothing. Show the user that list and confirm it before step 3.
+
+The script does three things that keep the counts honest:
 
 - **Exclusions.** It drops subagent transcripts, health checks, greeting-only sessions and the audit's own threads (first prompt starts with `# Session audit brief`, `/session-audit` or a `--self-prompt` prefix, or names `<audit>/out`).
-- **Forks.** A resumed or forked session replays its parent. The script keeps the earliest session and appends each later one's unique tail, so one conversation counts once. A fork that shares fewer than two leading turns stays separate.
+- **Forks.** A resumed or forked session replays its parent under the same turn ids (Claude Code event `uuid` or `forkedFrom.messageUuid`, Codex `turn_id`). Within one source and project, the script keeps the earliest session and folds in each later one's unique tail (turns, tools, skills, commands, models, end time), so one conversation counts once. Sessions that only share opening words stay separate, as do Codex rollouts without turn ids.
 - **Machine turns.** It marks user-channel turns that the machine wrote (CI and review-bot events, agent-to-agent messages, harness tags, headless prompts) with a label. They stay visible as `M[label]` and stay out of `n_user`.
 
-Done when the printed kind counts are plausible: `interactive` is the bulk, and `healthcheck`, `greeting`, `self` and `fork` are small. A greeting or ping that survived as `interactive` means the exclusion rules need a new prefix; rerun with it.
+Done when the user has confirmed the homes and the printed kind counts are plausible: `interactive` is the bulk, and `healthcheck`, `greeting`, `self` and `fork` are small. A greeting or ping that survived as `interactive` means the exclusion rules need a new prefix; rerun with it.
 
 ## 3. Stats and digests
 
@@ -38,7 +42,7 @@ python3 -I <skill>/scripts/stats.py <audit>/out
 python3 -I <skill>/scripts/digest.py <audit>/out <audit>/digests --chunk-chars 150000
 ```
 
-`stats.json` holds counts only. `digest.py` writes chunks of about 150K characters in time order, plus `session_index.json` and `status.json` (every chunk `pending`). **Security-themed sessions** are found with the script's regex over each session's rendered text, not its first prompt. They go only into `s<NN>-gpt.md` chunks. Done when every chunk printed has a file and an entry in `status.json`.
+`stats.json` holds counts only. `digest.py` refuses a `digests/` or `findings/` dir that already holds files, since new S-ids would let old findings pass; after changing the range or exclusions, start a fresh `<audit>`. It writes chunks of about 150K characters in time order, plus `session_index.json` and `status.json` (every chunk `pending`). **Security-themed sessions** are found with the script's regex over each session's rendered text, not its first prompt. They go only into `s<NN>-gpt.md` chunks. Done when every chunk printed has a file and an entry in `status.json`.
 
 ## 4. Delegate one chunk each
 

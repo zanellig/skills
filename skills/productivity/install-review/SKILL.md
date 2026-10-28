@@ -17,7 +17,7 @@ Name the artifact by exact version, plus the commit or checksum when the registr
 Download into a new, empty `mktemp -d` directory and keep it the only thing you write there. Use the fetch-only form of the tool:
 
 - npm: `npm pack <name>@<version> --ignore-scripts`
-- Python: `pip download --no-deps --no-binary :all: <name>==<version>`
+- Python: in `https://pypi.org/pypi/<name>/<version>/json`, take the `urls` entry whose `packagetype` is `sdist`, then `curl -o` its `url` and check `digests.sha256` (pip prepares an sdist's metadata, which runs its build code)
 - Git source (skills, MCP servers, PKGBUILD, install scripts): `git clone --depth 1`, then check out the pinned commit
 - Extension: download the `.vsix` and unzip it
 - Shell installer: `curl -o` the script, then read it

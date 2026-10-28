@@ -15,10 +15,10 @@ def read(path):
         return f.read()
 
 
-def cited(text, have):
+def cited(text):
     ids = set(re.findall(r'\bS(\d+)\b', text))
-    for a, b in re.findall(r'\bS(\d+)[–-]S?(\d+)\b', text):  # ranges like S941–S962
-        ids |= {str(i) for i in range(int(a), int(b) + 1) if str(i) in have}
+    for a, b in re.findall(r'\bS(\d+)[–-]S?(\d+)\b', text):  # ranges like S941–S962: every id in between is cited
+        ids |= {str(i) for i in range(int(a), int(b) + 1)}
     return ids
 
 
@@ -34,18 +34,18 @@ def main(argv=None):
         name = os.path.basename(f)[:-3]
         have = set(re.findall(r'^### S(\d+)', read(f'{d}/digests/{name}.md'), re.M))
         text = read(f)
-        ids = cited(text, have)
+        ids = cited(text)
         bad = ids - have
         valid |= ids & have
         if text.strip():
             status[name] = 'done'  # a findings file outranks a stale failure notice
         print(f'{name}: {len(ids)} cited, {len(bad)} not in chunk')
         for n, line in enumerate(text.splitlines(), 1):
-            for b in sorted(bad & cited(line, set()), key=int):
+            for b in sorted(bad & cited(line), key=int):
                 print(f'  {name}.md:{n}: S{b}')
         ok &= not bad
     if a.report:
-        missing = cited(read(a.report), set()) - valid
+        missing = cited(read(a.report)) - valid
         print(f'report: {len(missing)} S-ids with no findings file behind them', sorted(missing, key=int)[:30])
         ok &= not missing
     if status:

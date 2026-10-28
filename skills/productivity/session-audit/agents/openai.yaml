@@ -1,0 +1,5 @@
+interface:
+  display_name: "Session audit"
+  short_description: "Audit Claude Code and Codex history for patterns and skill candidates"
+policy:
+  allow_implicit_invocation: false

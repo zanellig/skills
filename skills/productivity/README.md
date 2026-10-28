@@ -16,6 +16,7 @@ General workflow tools, not code-specific.
 - **[prioritize](./prioritize/SKILL.md)** — Pick the most important open PR or issue to work on next and say why.
 - **[refined-loop](./refined-loop/SKILL.md)** — Schedule a prompt or slash command to run on a repeating schedule — every N minutes/hours/days, or at a fixed time of day.
 - **[review-loop](./review-loop/SKILL.md)** — Review the current change with a fresh reviewer in this harness, fix what holds up, and repeat until it approves.
+- **[session-audit](./session-audit/SKILL.md)** — Audit Claude Code and Codex history for work patterns, repeated instructions, missed skills and new skill candidates, and end with an HTML report.
 - **[ship-slice](./ship-slice/SKILL.md)** — Implement a vertical slice, complete Codex review rounds, and merge the PR.
 - **[writing-for-agents](./writing-for-agents/SKILL.md)** — Writing documents for agents.
 <!-- END GENERATED SKILL REFERENCE -->

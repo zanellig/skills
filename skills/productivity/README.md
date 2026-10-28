@@ -10,6 +10,7 @@ General workflow tools, not code-specific.
 - **[grill-architecture](./grill-architecture/SKILL.md)** — Grill a plan or change with architecture in the design tree: premise, placement, reuse, seams and alternative shapes, recorded as ADRs.
 - **[handoff](./handoff/SKILL.md)** — Compact the current conversation into a handoff document for another agent to pick up.
 - **[hitl-handoff](./hitl-handoff/SKILL.md)** — Post a handoff comment on a PR or issue when agent work is done but acceptance criteria still need a human.
+- **[improve-codebase-architecture](./improve-codebase-architecture/SKILL.md)** — Scan a codebase for deepening opportunities, present them as a visual HTML report, then grill through whichever one you pick.
 - **[install-review](./install-review/SKILL.md)** — Vet a package, editor extension, MCP server, agent skill, plugin or install script before it is installed, and report a verdict without installing it.
 - **[loop](./loop/SKILL.md)** — Claude Code's original /loop skill.
 - **[modernize](./modernize/SKILL.md)** — Rebase an aging PR onto its current base and decide whether it should still exist.

@@ -12,6 +12,7 @@
 
 ## Productivity
 
+- **[catch-up](./productivity/catch-up/SKILL.md)** — Catch up on where work in this repo or directory stopped: finds the newest Claude Code and Codex sessions across all its worktrees, checks the live git and PR state, and ends with a continuation prompt.
 - **[code-review](./productivity/code-review/SKILL.md)** — Review the changes since a fixed point (commit, branch, tag, or merge-base) along two axes: Standards (does the code follow this repo's documented coding standards?) and Spec (does the code match what the originating issue/spec asked for?).
 - **[commit](./productivity/commit/SKILL.md)** — Commit the current changes with a descriptive message.
 - **[geze-mode](./productivity/geze-mode/SKILL.md)** — Geze's working style for non-trivial tasks.

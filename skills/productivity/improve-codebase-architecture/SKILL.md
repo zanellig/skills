@@ -49,6 +49,8 @@ For each candidate, render a card with:
 - **Before / After diagram**: side-by-side, custom-drawn, illustrating the shallowness and the deepening
 - **Recommendation strength**: one of `Strong`, `Worth exploring`, `Speculative`, rendered as a badge
 
+Open the report with an **Ousterhout score** (1–10) for the scanned area; the scale is in HTML-REPORT.md.
+
 End the report with a **Top recommendation** section: which candidate you'd tackle first and why.
 
 **Use GLOSSARY.md vocabulary for the domain, and the `/codebase-design` vocabulary for the architecture.** If `GLOSSARY.md` defines "Order," talk about "the Order intake module," not "the FooBarHandler," and not "the Order service."

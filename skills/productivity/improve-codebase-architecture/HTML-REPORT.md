@@ -37,6 +37,8 @@ The architectural review is rendered as a single self-contained HTML file in the
 
 Repo name, date, and a compact legend: solid box = module, dashed line = seam, red arrow = leakage, thick dark box = deep module. No introduction paragraph. Straight into the candidates.
 
+Below the legend, an **Ousterhout score** for the scanned area: one integer, 1–10, with a one-line reason for each principle. Anchors: 1 = shallow modules everywhere, complexity leaking across every seam; 5 = mixed, some deep modules and some pass-through ones; 10 = deep modules, simple interfaces, complexity pulled downward. Principles scored: depth, information hiding, general-purpose interfaces, layers that add abstraction, errors defined out of existence, strategic over tactical code. Show the scores as badges, not a paragraph.
+
 ## Candidate card
 
 The diagrams carry the weight. Prose is sparse, plain, and uses the glossary terms (from the `/codebase-design` skill) without ceremony.

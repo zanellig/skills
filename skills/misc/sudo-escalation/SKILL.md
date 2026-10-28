@@ -21,7 +21,7 @@ pkexec pacman -Rns --print <pkgs>
 root.sh "remove <pkgs>" "pacman -S <pkgs>" pacman -Rns --noconfirm <pkgs>  # after the user okays the list
 ```
 
-When `pkexec` is missing or no polkit agent is running, hand the command back for the user to run in their own session, where sudo can prompt them directly. Their run is not logged, so say so when asked about changes:
+When `pkexec` is missing, no polkit agent is running, or `root.sh` cannot write its log (it says so and runs nothing), hand the command back for the user to run in their own session, where sudo can prompt them directly. Their run is not logged, so say so when asked about changes:
 
 > Run this yourself: `! sudo <cmd>`
 

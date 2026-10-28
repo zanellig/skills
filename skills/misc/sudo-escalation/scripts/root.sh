@@ -6,6 +6,16 @@ set -u
 why=$1 undo=$2
 shift 2
 
+# Check the log is writable before anything runs as root. Private: commands may carry secrets.
+dir=${XDG_STATE_HOME:-$HOME/.local/state}/sudo-escalation
+log=$dir/log.jsonl
+umask 077
+if ! command -v jq > /dev/null || ! command -v flock > /dev/null \
+  || ! mkdir -p "$dir" || ! chmod 700 "$dir" || ! touch "$log" || ! chmod 600 "$log"; then
+  echo "root.sh: cannot write $log (needs jq, flock); nothing ran" >&2
+  exit 1
+fi
+
 pkexec "$@"
 rc=$?
 
@@ -14,12 +24,12 @@ elif [ -n "${CLAUDE_CODE_SESSION_ID:-}" ]; then harness=claude session=$CLAUDE_C
 else harness=unknown session=
 fi
 
-dir=${XDG_STATE_HOME:-$HOME/.local/state}/sudo-escalation
-mkdir -p "$dir"
-jq -nc --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --arg harness "$harness" --arg session "$session" \
+rec=$(jq -nc --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --arg harness "$harness" --arg session "$session" \
   --arg cwd "$PWD" --argjson exit "$rc" --arg why "$why" --arg undo "$undo" '{
     ts: $ts, harness: $harness, session: (if $session == "" then null else $session end),
     cwd: $cwd, cmd: $ARGS.positional, exit: $exit, why: $why,
     undo: (if $undo == "-" or $undo == "" then null else $undo end)
-  }' --args -- "$@" >> "$dir/log.jsonl"
+  }' --args -- "$@") \
+  && { flock 9 && printf '%s\n' "$rec" >&9; } 9>> "$log" \
+  || echo "root.sh: the command ran (exit $rc) but was not logged; do not rerun it" >&2
 exit "$rc"

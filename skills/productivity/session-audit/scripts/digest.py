@@ -4,9 +4,10 @@
 Usage: python3 -I digest.py OUT_DIR DIGEST_DIR [--chunk-chars 150000]
 Chunks run in time order. Sessions whose rendered text matches SEC go only into s<NN>-gpt.md;
 the rest alternate c<NN>-claude.md, c<NN>-gpt.md. Also writes OUT_DIR/session_index.json (S-id to
-transcript path) and DIGEST_DIR/status.json (every chunk pending).
+transcript path) and DIGEST_DIR/status.json (every chunk pending). Refuses to run when DIGEST_DIR or its sibling
+findings/ already holds files: new S-ids would let old findings pass. Use a fresh audit dir.
 """
-import argparse, json, os, re
+import argparse, json, os, re, sys
 
 HOME = os.path.expanduser('~')
 SEC = re.compile(r'\b(vuln\w*|CVE|exploit\w*|pentest\w*|penetration|security|seguridad|vulnerab\w*|XSS|CSRF|SSRF|injection|inyecci\w+|'
@@ -74,6 +75,9 @@ def main(argv=None):
     ap.add_argument('digest_dir')
     ap.add_argument('--chunk-chars', type=int, default=150_000)
     a = ap.parse_args(argv)
+    for d in (a.digest_dir, os.path.join(os.path.dirname(os.path.abspath(a.digest_dir)), 'findings')):
+        if os.path.isdir(d) and os.listdir(d):
+            sys.exit(f'{d} is not empty: its findings would cite the old S-ids. Use a fresh audit dir.')
     rs = jsonl(f'{a.out_dir}/sessions.jsonl')
     turns = {d['path']: d['turns'] for d in jsonl(f'{a.out_dir}/turns.jsonl')}
     rows = sorted((r for r in rs if r['kind'] in ('interactive', 'headless')), key=lambda r: r['first_ts'] or '')

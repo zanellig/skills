@@ -13,6 +13,8 @@ This command is _informed_ by the project's domain model and built on a shared d
 - Call the Skill tool with "codebase-design" for the architecture vocabulary (**module**, **interface**, **depth**, **seam**, **adapter**, **leverage**, **locality**) and its principles (the deletion test, "the interface is the test surface", "one adapter = hypothetical seam, two = real"). Use these terms exactly in every suggestion, and don't drift into "component," "service," "API," or "boundary."
 - The domain language in `GLOSSARY.md` gives names to good seams; ADRs in `docs/adr/` record decisions this command should not re-litigate.
 
+"codebase-design", "grilling" and "domain-modeling" come from `mattpocock/skills`. If any is missing, stop and give the user the install command: `bunx skills add mattpocock/skills --skill codebase-design --skill grilling --skill domain-modeling`.
+
 ## Process
 
 ### 1. Explore

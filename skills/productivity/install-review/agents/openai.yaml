@@ -1,0 +1,3 @@
+interface:
+  display_name: "Install review"
+  short_description: "Vet a package, extension, MCP server or skill before installing"

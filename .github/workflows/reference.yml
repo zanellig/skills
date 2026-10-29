@@ -13,4 +13,6 @@ jobs:
       - uses: oven-sh/setup-bun@v2
       - run: bun test scripts/
       - run: python3 -I skills/productivity/catch-up/scripts/test_find_sessions.py
+      - run: skills/misc/sudo-escalation/scripts/test.sh
+      - run: python3 -I skills/productivity/session-audit/scripts/test_session_audit.py
       - run: bun scripts/gen-reference.mjs --check

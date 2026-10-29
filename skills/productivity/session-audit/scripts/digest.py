@@ -23,6 +23,7 @@ def jsonl(path):
 def clip(t, n):
     t = re.sub(r'```.*?```', lambda m: f'[code block {m.group(0).count(chr(10))} lines]', t, flags=re.S)
     t = re.sub(r'\n{3,}', '\n\n', t).replace(HOME, '~')
+    t = re.sub(r'^#', r'\#', t, flags=re.M)  # a quoted '### S<n>' line would pass as a session heading
     return t if len(t) <= n else t[:n] + f' …[+{len(t) - n} chars]'
 
 

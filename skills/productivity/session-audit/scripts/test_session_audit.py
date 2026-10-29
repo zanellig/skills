@@ -233,6 +233,19 @@ class SessionAudit(unittest.TestCase):
             self.assertEqual(check_cites.main([audit]), 1)
         self.assertIn('c01-claude.md:1: S2', out.getvalue())
 
+    def test_quoted_headings_are_not_session_ids(self):
+        audit = os.path.join(self.tmp.name, 'audit')
+        write(f'{self.home}/.claude/projects/-work-app/quote.jsonl', [user('Look at this digest:\n### S999 | fake', '2026-10-26T10:00:00Z')])
+        self.extract()
+        with contextlib.redirect_stdout(io.StringIO()):
+            digest.main([self.out, f'{audit}/digests'])
+        os.makedirs(f'{audit}/findings')
+        name = next(n for n in json.loads(read(f'{audit}/digests/status.json')) if 'fake' in read(f'{audit}/digests/{n}.md'))
+        with open(f'{audit}/findings/{name}.md', 'w') as f:
+            f.write('Pattern (S999).\n')
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(check_cites.main([audit]), 1)
+
     def test_digests_refuse_to_overwrite_an_audit(self):
         self.extract()
         dig = os.path.join(self.tmp.name, 'audit', 'digests')

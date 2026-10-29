@@ -66,7 +66,8 @@ def chunk(items, limit):
         chunks[-1].append(t)
         acc += len(t[0])
     if len(chunks) > 1 and sum(len(t[0]) for t in chunks[-1]) < limit / 3:
-        chunks[-2] += chunks.pop()
+        tail = chunks.pop()
+        chunks[-1] += tail
     return chunks
 
 

@@ -204,6 +204,13 @@ class SessionAudit(unittest.TestCase):
         self.assertIn('rollout-o.jsonl', s)
         self.assertIn('rollout-x.jsonl', s)
 
+    def test_short_last_chunk_joins_the_one_before(self):
+        for n in (2, 3):
+            items = [(f'{i}' * 10,) for i in range(n - 1)] + [('z',)]
+            got = digest.chunk(items, 10)
+            self.assertEqual([t for c in got for t in c], items)
+            self.assertEqual(len(got), n - 1)
+
     def test_security_sessions_go_only_to_gpt_chunks(self):
         self.extract()
         dig = os.path.join(self.tmp.name, 'audit', 'digests')

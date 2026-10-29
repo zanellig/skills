@@ -73,7 +73,7 @@ Merge the findings into one set of sections A–F (the brief's headings), keepin
 
 ## 8. Report
 
-Load the `dataviz` skill, then write `<audit>/report.html` from `stats.json` and the merged findings: the charts first (sessions per month, start hour, skills used against skills read, delegation), then sections A–F, then the comparison with earlier reviews. Finish with:
+Load the `dataviz` skill (bundled with Claude Code; where it is absent, draw the charts as inline SVG with labelled axes), then write `<audit>/report.html` from `stats.json` and the merged findings: the charts first (sessions per month, start hour, skills used against skills read, delegation), then sections A–F, then the comparison with earlier reviews. Finish with:
 
 ```sh
 python3 -I <skill>/scripts/check_cites.py <audit> --report <audit>/report.html

@@ -115,6 +115,17 @@ class SessionAudit(unittest.TestCase):
         s, _ = self.extract('--since', '2026-10-22', '--until', '2026-10-23')
         self.assertEqual(sorted(s), ['audit.jsonl', 'commit.jsonl', 'greet.jsonl', 'ping.jsonl', 'sec.jsonl'])
 
+    def test_codex_replies_reach_the_next_turn(self):
+        path = f'{self.home}/.work-ai/sessions/2026/10/24/rollout-x.jsonl'
+        with open(path, 'a') as f:
+            for e in ({'type': 'response_item', 'timestamp': '2026-10-24T10:00:02Z', 'payload': {'type': 'message', 'role': 'assistant',
+                       'content': [{'type': 'output_text', 'text': 'Start with the parser.'}]}},
+                      {'type': 'response_item', 'timestamp': '2026-10-24T10:00:03Z', 'payload': {'type': 'message', 'role': 'user',
+                       'content': [{'type': 'input_text', 'text': 'No, the lexer first'}]}}):
+                f.write(json.dumps(e) + '\n')
+        _, t = self.extract()
+        self.assertEqual(t['rollout-x.jsonl'][1]['prev_assistant'], 'Start with the parser.')
+
     def test_machine_turns_are_marked_not_counted(self):
         s, t = self.extract()
         self.assertEqual([u['machine'] for u in t['real.jsonl']][:5], [None, None, 'task-notification', 'ci-bot', None])

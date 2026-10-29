@@ -66,7 +66,7 @@ def events(path):
 def texts(content):
     if isinstance(content, str):
         return [content]
-    return [b.get('text', '') for b in content or [] if isinstance(b, dict) and b.get('type') in ('text', 'input_text')]
+    return [b.get('text', '') for b in content or [] if isinstance(b, dict) and b.get('type') in ('text', 'input_text', 'output_text')]
 
 
 def n_images(content):

@@ -10,7 +10,7 @@ Writes OUT_DIR/sessions.jsonl (every session, with a kind) and OUT_DIR/turns.jso
 (interactive and headless sessions: turns marked human or machine).
 Kinds: interactive, headless, or one of the excluded subagent, healthcheck, self, guardian,
 greeting, machine, empty, fork (merged into the session it resumed).
-Dates are UTC and inclusive.
+Dates are UTC and inclusive; a session is kept when its span from first to last event overlaps the range.
 """
 import argparse, collections, glob, json, os, re
 
@@ -383,8 +383,9 @@ def main(argv=None):
     for src, h, p in session_paths(homes):
         r = claude_session(p) if src == 'claude' else codex_session(p, names)
         r['home'] = h
-        day = (r['first_ts'] or '')[:10]
-        if (a.since or a.until) and not day or (a.since and day < a.since) or (a.until and day > a.until):
+        first, last = (r['first_ts'] or '')[:10], (r['last_ts'] or '')[:10]
+        # ponytail: a session overlapping the range is kept whole, turns before --since included.
+        if (a.since or a.until) and not first or (a.since and last < a.since) or (a.until and first > a.until):
             continue
         if is_headless(r):
             for u in r['user_turns']:

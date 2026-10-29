@@ -117,6 +117,10 @@ class SessionAudit(unittest.TestCase):
         s, _ = self.extract('--since', '2026-10-22', '--until', '2026-10-23')
         self.assertEqual(sorted(s), ['audit.jsonl', 'commit.jsonl', 'greet.jsonl', 'ping.jsonl', 'sec.jsonl'])
 
+    def test_date_range_keeps_sessions_resumed_into_it(self):
+        s, _ = self.extract('--since', '2026-10-21', '--until', '2026-10-21')
+        self.assertIn('resumed.jsonl', s)
+
     def test_codex_replies_reach_the_next_turn(self):
         path = f'{self.home}/.work-ai/sessions/2026/10/24/rollout-x.jsonl'
         with open(path, 'a') as f:

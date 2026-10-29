@@ -15,7 +15,7 @@ Below, `<skill>` is this skill's directory. The scripts run with `python3 -I`.
 
 ## 1. Scope
 
-Get from the user: the date range, the earlier review notes to compare against (ask if none are given), and any health-check prompts that differ from the defaults ("Reply only with Hi", "Respondé únicamente DISPONIBLE"). Create the audit directory `<audit>` (default `~/.agents/session-reviews/audit-<today>`). Done when all four are fixed.
+Get from the user: the date range, the earlier review notes to compare against (ask if none are given), and any health-check prompts that differ from the defaults ("Reply only with Hi", "Respondé únicamente DISPONIBLE"). Create the audit directory `<audit>` owner-only (`mkdir -m 700`, default `~/.agents/session-reviews/audit-<today>`). Done when all four are fixed.
 
 ## 2. Extract
 

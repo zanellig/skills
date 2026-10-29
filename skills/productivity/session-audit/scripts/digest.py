@@ -79,6 +79,7 @@ def main(argv=None):
     for d in (a.digest_dir, os.path.join(os.path.dirname(os.path.abspath(a.digest_dir)), 'findings')):
         if os.path.isdir(d) and os.listdir(d):
             sys.exit(f'{d} is not empty: its findings would cite the old S-ids. Use a fresh audit dir.')
+    os.umask(0o077)  # digests hold raw conversations: owner-only files and dirs
     rs = jsonl(f'{a.out_dir}/sessions.jsonl')
     turns = {d['path']: d['turns'] for d in jsonl(f'{a.out_dir}/turns.jsonl')}
     rows = sorted((r for r in rs if r['kind'] in ('interactive', 'headless')), key=lambda r: r['first_ts'] or '')
@@ -90,6 +91,7 @@ def main(argv=None):
     with open(f'{a.out_dir}/session_index.json', 'w') as f:
         json.dump(index, f)
     os.makedirs(a.digest_dir, exist_ok=True)
+    os.chmod(a.digest_dir, 0o700)
     files = {}
     for k, ch in enumerate(chunk([t for t in items if t[1]], a.chunk_chars), 1):
         files[f's{k:02d}-gpt'] = ch

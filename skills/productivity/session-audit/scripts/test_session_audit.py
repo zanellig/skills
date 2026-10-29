@@ -84,8 +84,10 @@ class SessionAudit(unittest.TestCase):
         self.env = mock.patch.dict(os.environ, {'HOME': self.home, 'CODEX_HOME': '', 'CLAUDE_CONFIG_DIR': '',
                                                 'XDG_CONFIG_HOME': '', 'XDG_DATA_HOME': ''})
         self.env.start()
+        self.umask = os.umask(0o022)
 
     def tearDown(self):
+        os.umask(self.umask)
         self.env.stop()
         self.tmp.cleanup()
 
@@ -125,6 +127,21 @@ class SessionAudit(unittest.TestCase):
                 f.write(json.dumps(e) + '\n')
         _, t = self.extract()
         self.assertEqual(t['rollout-x.jsonl'][1]['prev_assistant'], 'Start with the parser.')
+
+    def test_audit_files_are_owner_only(self):
+        os.makedirs(self.out)
+        os.chmod(self.out, 0o755)
+        self.extract()
+        dig = os.path.join(self.tmp.name, 'audit', 'digests')
+        os.makedirs(dig)
+        with contextlib.redirect_stdout(io.StringIO()):
+            digest.main([self.out, dig])
+        for d in (self.out, dig):
+            self.assertEqual(os.stat(d).st_mode & 0o777, 0o700, d)
+        for f in os.listdir(self.out):
+            self.assertEqual(os.stat(f'{self.out}/{f}').st_mode & 0o777, 0o600, f)
+        for f in os.listdir(dig):
+            self.assertEqual(os.stat(f'{dig}/{f}').st_mode & 0o777, 0o600, f)
 
     def test_machine_turns_are_marked_not_counted(self):
         s, t = self.extract()

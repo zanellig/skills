@@ -370,7 +370,9 @@ def main(argv=None):
     a = ap.parse_args(argv)
     home = os.path.expanduser('~')
     out = os.path.abspath(a.out_dir)
+    os.umask(0o077)  # raw conversations: owner-only files and dirs
     os.makedirs(out, exist_ok=True)
+    os.chmod(out, 0o700)
     cands = candidates(home)
     homes = {'claude': find_homes('claude', a.claude_home, cands), 'codex': find_homes('codex', a.codex_home, cands)}
     names = {}

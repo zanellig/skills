@@ -1,11 +1,5 @@
 import { execFileSync } from "node:child_process";
-import {
-	existsSync,
-	mkdirSync,
-	readFileSync,
-	rmSync,
-	writeFileSync,
-} from "node:fs";
+import { existsSync, mkdirSync, readFileSync, rmSync } from "node:fs";
 import { createServer } from "node:http";
 import { createRequire } from "node:module";
 import { dirname, extname, join, normalize, resolve } from "node:path";
@@ -454,13 +448,11 @@ try {
 			const walk = (list) =>
 				list.forEach((rule) => {
 					if (rule.cssRules) walk([...rule.cssRules]);
-					const value = rule.style && rule.style.fontFamily;
+					const value = rule.style?.fontFamily;
 					if (value)
-						value
-							.split(",")
-							.forEach((name) =>
-								families.add(name.trim().replace(/^["']|["']$/g, "")),
-							);
+						value.split(",").forEach((name) => {
+							families.add(name.trim().replace(/^["']|["']$/g, ""));
+						});
 				});
 			walk(rules);
 		}

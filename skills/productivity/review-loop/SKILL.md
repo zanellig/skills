@@ -1,6 +1,6 @@
 ---
 name: review-loop
-description: Review the current change with a fresh reviewer in this harness, fix what holds up, and repeat until it approves. Local only, no PR.
+description: Review the current change with a fresh reviewer in this harness, fix what holds up, and repeat until it approves.
 argument-hint: "[base] [rounds]"
 disable-model-invocation: true
 license: MIT
@@ -8,7 +8,7 @@ license: MIT
 
 # Review loop
 
-The local version of ship-slice's review rounds. The reviewer is a subagent in the harness running this skill, not a GitHub bot or another provider's model. Nothing leaves the machine: do not push, open a PR, or comment on GitHub.
+The local version of ship-slice's review rounds. The reviewer is a subagent in the harness running this skill, not a GitHub bot or another provider's model.
 
 ## 1. Pin the change
 
@@ -54,4 +54,4 @@ Run another round while rounds remain and a blocker or should is open, or a fix 
 
 Stop when step 4 calls for no further round: no blocker or should is open after your regrading and the reviewer has seen every behavior change, or the rounds ran out. A `CHANGES` verdict holding only declined nits ends here too. An item still disputed after two replies goes to the user, with each side in two or three lines. Running out of rounds is not approval.
 
-Report the rounds, findings fixed, disputed, and declined, the follow-ups, and the diff size before and after. Leave the fixes uncommitted unless the user asked for a commit.
+Report the rounds, findings fixed, disputed, and declined, the follow-ups, and the diff size before and after.

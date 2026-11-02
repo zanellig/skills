@@ -12,7 +12,13 @@ The local version of ship-slice's review rounds. The reviewer is a subagent in t
 
 ## 1. Pin the change
 
-The base defaults to `git merge-base HEAD origin/HEAD`; rounds default to 3. State the intent and what is out of scope in one or two sentences each. Run the checks that cover the change and note any that were already failing. Record `git diff --shortstat <base>`.
+Rounds default to 3. Unless the user names a base, run `git fetch origin` and take the first that resolves:
+
+- An open PR for the branch: `git merge-base HEAD origin/<baseRefName>`, with `baseRefName` from `gh pr view --json baseRefName`.
+- `git merge-base HEAD origin/HEAD`, or `origin/<default branch>` when `origin/HEAD` is unset.
+- No remote: `HEAD`, which covers uncommitted changes only.
+
+State the intent and what is out of scope in one or two sentences each. Run the checks that cover the change and fix what the change breaks before the first review; note any that were already failing. Record `git diff --shortstat <base>`.
 
 ## 2. Review
 

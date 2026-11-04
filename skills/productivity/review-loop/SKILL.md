@@ -1,6 +1,6 @@
 ---
 name: review-loop
-description: Review the current change with a fresh reviewer in this harness, fix what holds up, and repeat until it approves.
+description: Review the current change with a fresh reviewer, fix what holds up, and repeat until it approves.
 argument-hint: "[base] [rounds]"
 disable-model-invocation: true
 license: MIT
@@ -8,7 +8,7 @@ license: MIT
 
 # Review loop
 
-The local version of ship-slice's review rounds. The reviewer is a subagent in the harness running this skill, not a GitHub bot or another provider's model.
+The local version of ship-slice's review rounds. The reviewer is a subagent in the machine running this skill, not a GitHub bot or another provider's model.
 
 ## 1. Pin the change
 

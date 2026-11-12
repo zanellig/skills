@@ -4,9 +4,9 @@ description: Investigate a question against high-trust primary sources and captu
 license: MIT
 ---
 
-Spin up a **background agent** to do the research, so you keep working while it reads. Start it with a fresh context window.
+Do the research yourself when it is a handful of lookups. When the reading is long enough to stall your other work, hand it to a **background agent** with a fresh context window and keep working while it reads.
 
-Its job:
+The job, whoever does it:
 
 1. Investigate the question against **primary sources** (official docs, source code, specs, first-party APIs), not a secondary write-up of them. Follow every claim back to the source that owns it.
 2. Write the findings to a single Markdown file, citing each claim's source.

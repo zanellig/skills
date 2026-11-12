@@ -55,11 +55,12 @@ unresolved threads, PR closed), and 2 on bad input.
   Macroscope.
 - `any-change`: exit on the first event.
 
-In Claude Code, run it with the Monitor tool (`timeout_ms: 3600000`), so each
-line wakes you. Without a monitor, run it as one long command. It ends on its
-own.
+In Claude Code, run it with the Monitor tool at its maximum `timeout_ms`, so
+each line wakes you. Without a monitor, run it as one long command. It ends on
+its own.
 
-Start it again after you push, after you handle an exit 1, and after a resume.
+Start it again after you push, after you handle an exit 1, after a resume, and
+when the monitor expires before `pr-wait` exits.
 It remembers what it already reported, so nothing that arrived in between is
 lost. If it says another pid already watches the PR, do not start a second one.
 Kill the old one only if its events do not reach you.
@@ -88,7 +89,7 @@ CodeRabbit is advisory. Treat its findings like any other finding, but never
 wait for it and never hold a merge for it.
 
 If a review bot leaves feedback you believe is not worth addressing, reply with
-a written reason and resolve the comment. Use the `leaving-pr-comments` skill
+a written reason and resolve the comment. Use the `ai-model-disclosure` skill
 for every comment posted on the user's behalf.
 
 Screenshots and videos help as well, when you have a way to upload them.

@@ -46,19 +46,17 @@ Before delivering prose:
 - Narrator-from-a-distance ("Nobody designed this")? Put the reader in the scene.
 - Meta-joiners ("The rest of this essay...")? Delete. Let the essay move.
 
-## Scoring
+## Final check
 
-Rate 1-10 on each dimension:
+Revise until the answer to every question is yes:
 
 | Dimension | Question |
 |-----------|----------|
-| Directness | Statements or announcements? |
-| Rhythm | Varied or metronomic? |
+| Directness | Statements, with no announcements? |
+| Rhythm | Varied, never metronomic? |
 | Trust | Respects reader intelligence? |
 | Authenticity | Sounds human? |
-| Density | Anything cuttable? |
-
-Below 35/50: revise.
+| Density | Nothing left to cut? |
 
 ## Examples
 

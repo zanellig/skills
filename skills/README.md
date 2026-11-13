@@ -4,6 +4,7 @@
 
 ## Engineering
 
+- **[codebase-design](./engineering/codebase-design/SKILL.md)** — Shared vocabulary for designing deep modules.
 - **[diagnosing-bugs](./engineering/diagnosing-bugs/SKILL.md)** — Diagnosis loop for hard bugs and performance regressions.
 - **[implement-spec](./engineering/implement-spec/SKILL.md)** — Implement the result of /to-spec and /to-tickets in code.
 - **[research](./engineering/research/SKILL.md)** — Investigate a question against high-trust primary sources and capture the findings as a Markdown file in the repo.

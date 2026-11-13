@@ -17,13 +17,13 @@ Eliminate predictable AI writing patterns from prose.
 
 2. **Break formulaic structures.** Avoid binary contrasts, negative listings, dramatic fragmentation, rhetorical setups, false agency. See [references/structures.md](references/structures.md).
 
-3. **Use active voice.** Every sentence needs a human subject doing something. No passive constructions. No inanimate objects performing human actions ("the complaint becomes a fix").
+3. **Prefer active voice.** Name the actor as the subject: a person, or the program or tool that acts ("the compiler validates queries"). Keep the passive only when the actor is unknown or does not matter. No inanimate objects performing human actions ("the complaint becomes a fix").
 
 4. **Be specific.** No vague declaratives ("The reasons are structural"). Name the specific thing. No lazy extremes ("every," "always," "never") doing vague work.
 
 5. **Put the reader in the room.** No narrator-from-a-distance voice. "You" beats "People." Specifics beat abstractions.
 
-6. **Vary rhythm.** Mix sentence lengths. Two items beat three. End paragraphs differently. No em dashes.
+6. **Vary rhythm.** Mix sentence lengths. Use the natural number of items, not a forced three. End paragraphs differently. No em dashes.
 
 7. **Trust readers.** State facts directly. Skip softening, justification, hand-holding.
 
@@ -34,7 +34,7 @@ Eliminate predictable AI writing patterns from prose.
 Before delivering prose:
 
 - Any adverbs? Kill them.
-- Any passive voice? Find the actor, make them the subject.
+- Passive voice where the actor matters? Make the actor the subject.
 - Inanimate thing doing a human verb ("the decision emerges")? Name the person.
 - Sentence starts with a Wh- word? Restructure it.
 - Any "here's what/this/that" throat-clearing? Cut to the point.

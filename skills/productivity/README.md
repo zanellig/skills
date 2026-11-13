@@ -3,11 +3,13 @@
 General workflow tools, not code-specific.
 
 <!-- BEGIN GENERATED SKILL REFERENCE -->
+- **[babysit-pr](./babysit-pr/SKILL.md)** — Monitor a pull request through review and CI.
 - **[catch-up](./catch-up/SKILL.md)** — Catch up on where work in this repo or directory stopped: finds the newest Claude Code and Codex sessions across all its worktrees, checks the live git and PR state, and ends with a continuation prompt.
 - **[claude-model-choice](./claude-model-choice/SKILL.md)** — Which Claude model and effort level to give a task, picked from the Artificial Analysis cost frontier for a Claude subscription.
 - **[code-review](./code-review/SKILL.md)** — Review the changes since a fixed point (commit, branch, tag, or merge-base) along two axes: Standards (does the code follow this repo's documented coding standards?) and Spec (does the code match what the originating issue/spec asked for?).
 - **[commit](./commit/SKILL.md)** — Commit the current changes with a descriptive message.
 - **[grill-architecture](./grill-architecture/SKILL.md)** — Grill a plan or change with architecture in the design tree: premise, placement, reuse, seams and alternative shapes, recorded as ADRs.
+- **[grilling](./grilling/SKILL.md)** — Grill the user relentlessly about a plan, decision, or idea.
 - **[handoff](./handoff/SKILL.md)** — Compact the current conversation into a handoff document for another agent to pick up.
 - **[hitl-handoff](./hitl-handoff/SKILL.md)** — Post a handoff comment on a PR or issue when agent work is done but acceptance criteria still need a human.
 - **[improve-codebase-architecture](./improve-codebase-architecture/SKILL.md)** — Scan a codebase for deepening opportunities, present them as a visual HTML report, then grill through whichever one you pick.

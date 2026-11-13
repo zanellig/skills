@@ -2,11 +2,20 @@
 
 # Reference
 
+## Engineering
+
+- **[codebase-design](./engineering/codebase-design/SKILL.md)** — Shared vocabulary for designing deep modules.
+- **[diagnosing-bugs](./engineering/diagnosing-bugs/SKILL.md)** — Diagnosis loop for hard bugs and performance regressions.
+- **[implement-spec](./engineering/implement-spec/SKILL.md)** — Implement the result of /to-spec and /to-tickets in code.
+- **[research](./engineering/research/SKILL.md)** — Investigate a question against high-trust primary sources and capture the findings as a Markdown file in the repo.
+- **[to-spec](./engineering/to-spec/SKILL.md)** — Turn the current conversation into a spec and publish it to the project issue tracker: no interview, just synthesis of what you've already discussed.
+
 ## Misc
 
 - **[ai-model-disclosure](./misc/ai-model-disclosure/SKILL.md)** — Attribution note for GitHub text posted on the user's behalf.
 - **[bro](./misc/bro/SKILL.md)** — Restate the last message in plain human language, with no jargon.
 - **[bump](./misc/bump/SKILL.md)** — Create and push semver version tags.
+- **[stop-slop](./misc/stop-slop/SKILL.md)** — Remove AI writing patterns from prose.
 - **[sudo-escalation](./misc/sudo-escalation/SKILL.md)** — Use whenever a command needs root privileges — a `sudo` command, a write outside the user's home, a package install or removal, a "permission denied" failure — or the user asks what was changed with sudo or root.
 - **[unslop-ui](./misc/unslop-ui/SKILL.md)** — Turns vibecoded, AI-looking UI into a designed interface with its own character.
 - **[unslop](./misc/unslop/SKILL.md)** — Cut AI tells from any writing.
@@ -14,11 +23,13 @@
 
 ## Productivity
 
+- **[babysit-pr](./productivity/babysit-pr/SKILL.md)** — Monitor a pull request through review and CI.
 - **[catch-up](./productivity/catch-up/SKILL.md)** — Catch up on where work in this repo or directory stopped: finds the newest Claude Code and Codex sessions across all its worktrees, checks the live git and PR state, and ends with a continuation prompt.
 - **[claude-model-choice](./productivity/claude-model-choice/SKILL.md)** — Which Claude model and effort level to give a task, picked from the Artificial Analysis cost frontier for a Claude subscription.
 - **[code-review](./productivity/code-review/SKILL.md)** — Review the changes since a fixed point (commit, branch, tag, or merge-base) along two axes: Standards (does the code follow this repo's documented coding standards?) and Spec (does the code match what the originating issue/spec asked for?).
 - **[commit](./productivity/commit/SKILL.md)** — Commit the current changes with a descriptive message.
 - **[grill-architecture](./productivity/grill-architecture/SKILL.md)** — Grill a plan or change with architecture in the design tree: premise, placement, reuse, seams and alternative shapes, recorded as ADRs.
+- **[grilling](./productivity/grilling/SKILL.md)** — Grill the user relentlessly about a plan, decision, or idea.
 - **[handoff](./productivity/handoff/SKILL.md)** — Compact the current conversation into a handoff document for another agent to pick up.
 - **[hitl-handoff](./productivity/hitl-handoff/SKILL.md)** — Post a handoff comment on a PR or issue when agent work is done but acceptance criteria still need a human.
 - **[improve-codebase-architecture](./productivity/improve-codebase-architecture/SKILL.md)** — Scan a codebase for deepening opportunities, present them as a visual HTML report, then grill through whichever one you pick.

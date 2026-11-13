@@ -6,11 +6,11 @@ license: MIT
 
 Call the Skill tool for "grilling", "domain-modeling" and "codebase-design". Run the session as grilling describes; this skill adds architecture branches to the design tree and a rule for consultations.
 
-Those three skills come from `mattpocock/skills`. If any is missing, stop and give the user the install command: `bunx skills add mattpocock/skills --skill grilling --skill domain-modeling --skill codebase-design`.
+`grilling` ships in this repo; `domain-modeling` and `codebase-design` come from `mattpocock/skills`. If any is missing, stop and give the user the install command: `bunx skills add zanellig/skills --skill grilling` or `bunx skills add mattpocock/skills --skill domain-modeling --skill codebase-design`.
 
 ## Before the first round
 
-Explore the code and ADRs the idea touches with a sub-agent, or several if the codebase is large or the idea is complex. If a grilling session is already under way, add the branches to its current tree.
+Explore the code and ADRs the idea touches. Use sub-agents for it only when the codebase is large or the idea is complex enough that the reading would crowd out the session. If a grilling session is already under way, add the branches to its current tree.
 
 ## Architecture branches
 

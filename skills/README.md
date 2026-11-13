@@ -14,6 +14,7 @@
 - **[ai-model-disclosure](./misc/ai-model-disclosure/SKILL.md)** — Attribution note for GitHub text posted on the user's behalf.
 - **[bro](./misc/bro/SKILL.md)** — Restate the last message in plain human language, with no jargon.
 - **[bump](./misc/bump/SKILL.md)** — Create and push semver version tags.
+- **[stop-slop](./misc/stop-slop/SKILL.md)** — Remove AI writing patterns from prose.
 - **[sudo-escalation](./misc/sudo-escalation/SKILL.md)** — Use whenever a command needs root privileges — a `sudo` command, a write outside the user's home, a package install or removal, a "permission denied" failure — or the user asks what was changed with sudo or root.
 - **[unslop-ui](./misc/unslop-ui/SKILL.md)** — Turns vibecoded, AI-looking UI into a designed interface with its own character.
 - **[unslop](./misc/unslop/SKILL.md)** — Cut AI tells from any writing.

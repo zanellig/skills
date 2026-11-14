@@ -1,18 +1,18 @@
 ---
 name: review-loop
 description: Review the current change with a fresh reviewer, fix what holds up, and repeat until it approves.
-argument-hint: "[base] [rounds]"
+argument-hint: "[rounds] [model...]"
 disable-model-invocation: true
 license: MIT
 ---
 
 # Review loop
 
-The local version of ship-slice's review rounds. The reviewer is a subagent in the machine running this skill, not a GitHub bot or another provider's model.
+The local version of ship-slice's review rounds.
 
 ## 1. Pin the change
 
-Rounds default to 3. Unless the user names a base, run `git fetch origin` and take the first that resolves:
+A leading number in the arguments sets the rounds, default 3. Any other arguments are models or the user's instructions. Unless the user names a base, run `git fetch origin` and take the first that resolves:
 
 - An open PR for the branch: `git merge-base HEAD origin/<baseRefName>`, with `baseRefName` from `gh pr view --json baseRefName`.
 - `git merge-base HEAD origin/HEAD`, or `origin/<default branch>` when `origin/HEAD` is unset.
@@ -22,14 +22,17 @@ State the intent and what is out of scope in one or two sentences each. Run the 
 
 ## 2. Review
 
-Spawn one read-only subagent with no conversation history, on your own model. Brief it with:
+Spawn one read-only subagent with a fresh context. Use the first model the user names; each later round takes the next one, wrapping around the list. If they name none, use another provider's default model through the harness's delegation tool, so the reviewer doesn't share your blind spots. If the harness can't reach another provider, use your own model and say so in the final report.
+
+Brief it with:
 
 ```
-Review only. Do not edit files, commit, or start subagents.
+You're the reviewer agent for this set of changes.
+Make a read-only review. Do not edit files, commit, or start subagents.
 Repo: <abs path>  Base: <sha>
 Intent: <intent>  Out of scope: <scope>  Checks: <results>
 Read `git diff <base>` and `git status --short`, including untracked files, and the code around the change.
-Look for bugs, broken callers, and mismatches with the intent. Skip style unless it hides a bug.
+Look for bugs, broken callers, security issues, performance regressions, and mismatches with the intent. Skip style unless it hides one of these.
 Flag code, tests, or guards the intent does not need.
 Grade each finding:
   blocker: the intended case is wrong

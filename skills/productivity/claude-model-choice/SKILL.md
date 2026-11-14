@@ -25,27 +25,27 @@ Each row sits on the Artificial Analysis frontier for its pool: within Fable, or
 
 | Work | `model` | `effort` | Index | Cost | Minutes |
 | --- | --- | --- | --- | --- | --- |
-| Find files, search code, run a command and report | `haiku` | `medium` | 25 | $0.09 | 4.0 |
-| Read logs or docs, then summarize, classify or extract | `haiku` | `xhigh` | 35 | $0.25 | 9.6 |
-| Scoped code against a clear spec, or a repeated agent task | `sonnet` | `high` | 42 | $1.64 | 7.0 |
-| Everyday engineering, debugging, review, computer use | `opus` | `medium` | 48 | $2.45 | 7.2 |
-| The same, where edge cases or verification decide the result | `opus` | `high` | 52 | $3.46 | 9.5 |
-| A hard problem you want kept off the Fable half | `opus` | `xhigh` | 57 | $6.05 | 15.8 |
-| Architecture, a major refactor or migration, deep research, a long unattended run | `fable` | `medium` | 56 | $3.80 | 7.7 |
-| The same, after `medium` falls short | `fable` | `high` | 62 | $9.08 | 16.8 |
+| Find files, search code, run a command and report | `haiku` | `medium` | 25 | \$0.09 | 4.0 |
+| Read logs or docs, then summarize, classify or extract | `haiku` | `xhigh` | 35 | \$0.25 | 9.6 |
+| Scoped code against a clear spec, or a repeated agent task | `sonnet` | `high` | 42 | \$1.64 | 7.0 |
+| Everyday engineering, debugging, review, computer use | `opus` | `medium` | 48 | \$2.45 | 7.2 |
+| The same, where edge cases or verification decide the result | `opus` | `high` | 52 | \$3.46 | 9.5 |
+| A hard problem you want kept off the Fable half | `opus` | `xhigh` | 57 | \$6.05 | 15.8 |
+| Architecture, a major refactor or migration, deep research, a long unattended run | `fable` | `medium` | 56 | \$3.80 | 7.7 |
+| The same, after `medium` falls short | `fable` | `high` | 62 | \$9.08 | 16.8 |
 
 Pass both `model` and `effort` on the call. A subagent on a different model from yours ignores the session's effort and runs at that model's default.
 
 Two picks sit off the cost frontier and earn their place another way:
 
-- When someone is waiting on the reply, use `sonnet` at `low` (26, $0.51, 2.5 minutes) or `opus` at `low` (35, $0.98, 3.0 minutes). Haiku reaches the same scores for less, but takes about three times as long.
-- For a short second opinion, `fable` at `low` (54, $3.10, 6.2 minutes) beats `opus` at `high` on score, cost and time. It still spends the Fable half.
+- When someone is waiting on the reply, use `sonnet` at `low` (26, \$0.51, 2.5 minutes) or `opus` at `low` (35, \$0.98, 3.0 minutes). Haiku reaches the same scores for less, but takes about three times as long.
+- For a short second opinion, `fable` at `low` (54, \$3.10, 6.2 minutes) beats `opus` at `high` on score, cost and time. It still spends the Fable half.
 
 ## Settings that lose
 
 - `sonnet` at `xhigh` or `max`, and `fable` at `xhigh`. Another setting scores at least as high for less cost and less time.
-- `opus` at `max` (59, $10.04, 25.2 minutes) loses to `fable` at `high` on all three. Use it only when the Fable half is spent and `opus` at `xhigh` fell short.
-- `fable` at `max` (65, $26.54, 46.7 minutes) adds three points for about three times the cost of `high`. Use it only when the user asks for it.
+- `opus` at `max` (59, \$10.04, 25.2 minutes) loses to `fable` at `high` on all three. Use it only when the Fable half is spent and `opus` at `xhigh` fell short.
+- `fable` at `max` (65, \$26.54, 46.7 minutes) adds three points for about three times the cost of `high`. Use it only when the user asks for it.
 - `haiku` at `max` adds one point over `xhigh` for half again the wait.
 
 ## When a pick falls short

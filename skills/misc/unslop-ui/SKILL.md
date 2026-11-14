@@ -112,7 +112,7 @@ If the product already has a real brand, like a logo file, a color or a typeface
 - Hierarchy comes from size and color, not from weight.
 - Sentence case everywhere. Labels like `NAVIGATION` or `PAID THIS MONTH` with wide tracking become `Navigation` and `Paid this month`.
 - Small text never gets negative letter spacing. Readability on small text means bigger, a bit bolder or slightly looser. Tight tracking is only for large display text.
-- Numbers use `tabular-nums` and one format across the screen. If one figure is `$48,210`, the next is not `$124,860.40`.
+- Numbers use `tabular-nums` and one format across the screen. If one figure is `\$48,210`, the next is not `\$124,860.40`.
 - No italic for emphasis.
 
 ## 6. Layout

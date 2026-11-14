@@ -1,0 +1,6 @@
+{
+  "private": true,
+  "scripts": {
+    "prepare": "git config --local core.hooksPath .githooks"
+  }
+}

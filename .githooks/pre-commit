@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Keeps the generated skill reference in sync so CI's --check never fails on a
 # forgotten regeneration. Enable once per clone:
-#   git config core.hooksPath .githooks
+#   bun install
 set -eu
 
 bun scripts/gen-reference.mjs

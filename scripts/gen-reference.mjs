@@ -3,7 +3,11 @@
 // from each SKILL.md frontmatter.
 // Usage: bun scripts/gen-reference.mjs [--check]
 import { globSync, readFileSync, writeFileSync } from "node:fs";
-import { dirname, relative } from "node:path";
+import { posix } from "node:path";
+
+// Keep filesystem comparisons and Markdown links consistent across platforms.
+const { dirname, relative } = posix;
+const globPaths = (pattern) => globSync(pattern).map((path) => path.replaceAll("\\", "/"));
 
 const OUT = "skills/README.md";
 const GENERATED_START = "<!-- BEGIN GENERATED SKILL REFERENCE -->";
@@ -46,10 +50,10 @@ export const summarize = (description) => {
 const title = (s) => s.replace(/(^|[-\s])(\w)/g, (_, sep, c) => (sep === "-" ? " " : sep) + c.toUpperCase());
 
 const loadSkills = () =>
-  globSync("skills/**/SKILL.md")
+  globPaths("skills/**/SKILL.md")
     .sort()
     .map((path) => {
-      const fm = readFileSync(path, "utf8").match(/^---\n([\s\S]*?)\n---/);
+      const fm = readFileSync(path, "utf8").match(/^---\r?\n([\s\S]*?)\r?\n---/);
       if (!fm) throw new Error(`${path}: missing frontmatter`);
       const { name, description = "" } = Bun.YAML.parse(fm[1]);
       const parts = path.split("/"); // skills/[category/]name/SKILL.md
@@ -122,7 +126,7 @@ if (import.meta.main) {
   const { body, count } = render(skills);
   const targets = [
     { path: OUT, current: readOrEmpty(OUT), next: body },
-    ...globSync("skills/**/README.md")
+    ...globPaths("skills/**/README.md")
       .filter((path) => path !== OUT && !skills.some((skill) => {
         const skillDirectory = dirname(skill.path);
         const readmeDirectory = dirname(path);

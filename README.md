@@ -55,11 +55,13 @@ bun scripts/gen-reference.mjs
 
 The same command updates generated skill-reference sections in existing category and subcategory `README.md` files. It preserves content outside the generated markers and does not create new category READMEs.
 
-You should not need to run it by hand. Enable the pre-commit hook once per clone and it regenerates and stages the reference on every commit:
+Run this once after cloning to activate the pre-commit hook through the package's `prepare` script:
 
 ```sh
-git config core.hooksPath .githooks
+bun install
 ```
+
+The hook regenerates and stages the reference on every commit. A generator failure aborts the commit. No additional dependencies are needed.
 
 CI runs `bun scripts/gen-reference.mjs --check` and fails if the committed reference is stale, so this stays a backstop rather than the thing you rely on.
 

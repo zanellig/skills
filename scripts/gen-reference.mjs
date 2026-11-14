@@ -3,7 +3,11 @@
 // from each SKILL.md frontmatter.
 // Usage: bun scripts/gen-reference.mjs [--check]
 import { globSync, readFileSync, writeFileSync } from "node:fs";
-import { dirname, relative } from "node:path";
+import { posix, sep } from "node:path";
+
+// globSync returns native separators; every path here is compared and linked with "/".
+const { dirname, relative } = posix;
+const glob = (pattern) => globSync(pattern).map((path) => path.split(sep).join("/"));
 
 const OUT = "skills/README.md";
 const GENERATED_START = "<!-- BEGIN GENERATED SKILL REFERENCE -->";
@@ -46,10 +50,10 @@ export const summarize = (description) => {
 const title = (s) => s.replace(/(^|[-\s])(\w)/g, (_, sep, c) => (sep === "-" ? " " : sep) + c.toUpperCase());
 
 const loadSkills = () =>
-  globSync("skills/**/SKILL.md")
+  glob("skills/**/SKILL.md")
     .sort()
     .map((path) => {
-      const fm = readFileSync(path, "utf8").match(/^---\n([\s\S]*?)\n---/);
+      const fm = readFileSync(path, "utf8").match(/^---\r?\n([\s\S]*?)\r?\n---/);
       if (!fm) throw new Error(`${path}: missing frontmatter`);
       const { name, description = "" } = Bun.YAML.parse(fm[1]);
       const parts = path.split("/"); // skills/[category/]name/SKILL.md
@@ -122,7 +126,7 @@ if (import.meta.main) {
   const { body, count } = render(skills);
   const targets = [
     { path: OUT, current: readOrEmpty(OUT), next: body },
-    ...globSync("skills/**/README.md")
+    ...glob("skills/**/README.md")
       .filter((path) => path !== OUT && !skills.some((skill) => {
         const skillDirectory = dirname(skill.path);
         const readmeDirectory = dirname(path);
@@ -131,9 +135,13 @@ if (import.meta.main) {
       .sort()
       .map((path) => {
         const current = readFileSync(path, "utf8");
-        return { path, current, next: renderCategory(path, current, skills) };
+        return { path, current, next: renderCategory(path, current.replaceAll("\r\n", "\n"), skills) };
       }),
-  ];
+  ].map((target) => ({
+    ...target,
+    // Keep a CRLF checkout (core.autocrlf) in CRLF so git sees no change.
+    next: target.current.includes("\r\n") ? target.next.replaceAll("\n", "\r\n") : target.next,
+  }));
   const stale = targets.filter(({ current, next }) => current !== next);
 
   if (process.argv.includes("--check")) {

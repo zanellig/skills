@@ -1,0 +1,3 @@
+interface:
+  display_name: "OpenAI model choice"
+  short_description: "Pick an OpenAI model and reasoning effort for a task"

@@ -1,0 +1,3 @@
+interface:
+  display_name: "Claude model choice"
+  short_description: "Pick a Claude model and effort level for a task"

@@ -63,7 +63,7 @@ Run another round while rounds remain and a blocker or should is open, or a fix 
 
 Stop when step 4 calls for no further round: no blocker or should is open after your regrading and the reviewer has seen every behavior change, or the rounds ran out. A `CHANGES` verdict holding only declined nits ends here too. An item still disputed after two replies goes to the user, with each side in two or three lines. Running out of rounds is not approval.
 
-Report the follow-ups, then end with this run note. If the branch has an open PR, also add the note to its body, replacing any earlier one.
+Report the follow-ups, then end with this run note. If the branch has an open PR, or you opened one for it, add the note to its body, replacing any earlier one.
 
 ```
 Review loop: <n> of <max> rounds, ended by <approval | no open blocker or should | rounds ran out | dispute sent to user>.

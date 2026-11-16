@@ -37,6 +37,7 @@
 - **[install-review](./productivity/install-review/SKILL.md)** — Vet a package, editor extension, MCP server, agent skill, plugin or install script before it is installed, and report a verdict without installing it.
 - **[loop](./productivity/loop/SKILL.md)** — Claude Code's original /loop skill.
 - **[modernize](./productivity/modernize/SKILL.md)** — Rebase an aging PR onto its current base and decide whether it should still exist.
+- **[openai-model-choice](./productivity/openai-model-choice/SKILL.md)** — Which OpenAI model (Luna, Terra, Sol or Astra) and reasoning effort to give a task, picked from the Artificial Analysis cost frontier for a ChatGPT subscription.
 - **[prioritize](./productivity/prioritize/SKILL.md)** — Pick the most important open PR or issue to work on next and say why.
 - **[refined-loop](./productivity/refined-loop/SKILL.md)** — Schedule a prompt or slash command to run on a repeating schedule — every N minutes/hours/days, or at a fixed time of day.
 - **[review-loop](./productivity/review-loop/SKILL.md)** — Review the current change with a fresh reviewer, fix what holds up, and repeat until it approves.

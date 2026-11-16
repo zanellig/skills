@@ -22,7 +22,7 @@ State the intent and what is out of scope in one or two sentences each. Run the 
 
 ## 2. Review
 
-Spawn one read-only subagent with a fresh context. Use the first model the user names; each later round takes the next one, wrapping around the list. If they name none, use another provider's default model through the harness's delegation tool, so the reviewer doesn't share your blind spots. If the harness can't reach another provider, use your own model and say so in the final report.
+Spawn one read-only subagent with a fresh context. Use the first model the user names; each later round takes the next one, wrapping around the list. If they name none, use another provider's default model through the harness's delegation tool, so the reviewer doesn't share your blind spots. If the harness can't reach another provider, use your own model and say so in the run note.
 
 Brief it with:
 
@@ -63,4 +63,11 @@ Run another round while rounds remain and a blocker or should is open, or a fix 
 
 Stop when step 4 calls for no further round: no blocker or should is open after your regrading and the reviewer has seen every behavior change, or the rounds ran out. A `CHANGES` verdict holding only declined nits ends here too. An item still disputed after two replies goes to the user, with each side in two or three lines. Running out of rounds is not approval.
 
-Report the rounds, findings fixed, disputed, and declined, the follow-ups, and the diff size before and after.
+Report the follow-ups, then end with this run note. If the branch has an open PR, or you opened one for it, add the note to its body, replacing any earlier one. Follow the body's existing format: put the note in its evidence or testing section if it has one, otherwise under a `## Review loop` heading. Keep any block the body must end with, such as an attribution note, last.
+
+```
+Review loop: <n> of <max> rounds, ended by <approval | no open blocker or should | rounds ran out | dispute sent to user>.
+Reviewers: round 1 <model>, round 2 <model>, ...
+Findings: <n> fixed, <n> disputed, <n> declined.
+Diff: <shortstat before> before, <shortstat after> after.
+```

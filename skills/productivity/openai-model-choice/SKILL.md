@@ -6,34 +6,78 @@ license: MIT
 
 # OpenAI model choice
 
-Honor the model and effort the user explicitly requests. This skill applies once you need to choose a model or effort.
+Pick the model and reasoning effort for work you hand to an OpenAI model: a Codex delegate, a subagent, or a model pinned in Codex config or an agent file. This skill covers which model to use once you delegate. Whether to delegate is a separate decision, and a model or effort the user names always wins.
 
 ## Resolve the checkpoint
 
 1. Run `codex debug models` in the target Codex environment each time you need to resolve a family to a model ID. Read `models[].slug` and `supported_reasoning_levels`. Use the normal command so Codex can refresh the catalog.
-2. Choose a family and effort from the table below. Within that family, pick the newest checkpoint available to the runner that will execute the task. Use the exact ID from the catalog and compare version components numerically, treating an omitted minor version as zero. When the runner exposes its own supported models, use it to check that it accepts the ID. If the CLI catalog is unavailable, use the runner's model list. If neither confirms a usable ID for the chosen family, say what you could verify.
-3. Set the model ID and effort together. If the newest checkpoint lacks the suggested effort, pick a supported effort that fits the task. If the runner cannot honor an explicit user choice, report the limitation before substituting.
+2. Choose a family and effort from the sections below. Within that family, pick the newest checkpoint available to the runner that will execute the task. Use the exact ID from the catalog and compare version components numerically, treating an omitted minor version as zero. When the runner exposes its own supported models, use it to check that it accepts the ID. If the CLI catalog is unavailable, use the runner's model list. If neither confirms a usable ID for the chosen family, say what you could verify.
+3. Set the model ID and effort together. In T3 Code the default effort differs by model (`low` on Sol and Terra, `medium` on Astra and Luna in the last snapshot), so an unset effort is a choice too. If the newest checkpoint lacks the suggested effort, pick a supported effort that fits the task. If the runner cannot honor an explicit user choice, report the limitation before substituting.
 
-## Choose a family and effort
+## The budget
 
-Use the lightest setting that meets the task's quality and latency requirements. These starting points come from the measured cost frontier and carry forward as estimates when a family gets a new checkpoint.
+The work runs on a ChatGPT subscription, so the budget is the plan's Codex allowance. All families draw on one allowance, in credits per token, at a published rate per model.
 
-| Work | Family | Effort |
-| --- | --- | --- |
-| Tagging, routing, or simple extraction at volume | Luna | `low` |
-| Finding files, searching code, reading logs, or summarizing | Terra | `low` |
-| A scoped code fix, concise writing from supplied material, or computer use with a defined outcome | Terra | `high` |
-| Everyday engineering when someone is waiting for the reply | Sol | `low` |
-| Everyday engineering and technical work you expect to revise | Sol | `medium` |
-| Engineering where edge cases or verification decide the result | Sol | `high` |
-| A polished deliverable or a decision from conflicting evidence | Sol | `xhigh` |
-| The hardest work when latency is flexible | Sol | `max` |
-| The hardest work when latency matters and the subscription allowance can cover the higher cost | Astra | `high` |
+- In the last snapshot, every credit rate was 25 times the API dollar price, so the Cost column below is the relative draw on the allowance. Per token, Astra drew 5 times Sol, Sol 2 times Terra, and Terra 10 times Luna. A new checkpoint can change these rates.
+- Plus has a five-hour window and Pro does not. A weekly limit can apply on both. On Plus, Astra usage is described as limited.
+- OpenAI's faster speeds draw 2.5 to 8 times as much. Leave the service tier at its default unless the user asks.
 
-Use `max` on Astra or `ultra` on any model only when the user asks. Leave the service tier at its default unless the user asks for another tier.
+## Family size
 
-If a pick falls short, first clarify the inputs, requirements, and how to verify the result. Then raise effort within the family if there is a suitable supported setting. Move from Terra to Sol or from Sol to Astra if the task still needs more capability.
+A larger family holds more patterns from training: more domain knowledge, more ways a plan can fail, more idioms and styles. Reasoning effort only works with what the model already holds, so a small family at high effort reasons longer over a smaller store. The Intelligence Index mixes reasoning, knowledge and coding tasks with known answers, so it understates this gap on open-ended work.
 
-## Benchmark evidence
+Pick by family first when the task depends on breadth rather than steps:
 
-Read [references/evidence.md](references/evidence.md) when you need scores, costs, timings, or plan rules. Match benchmark rows to the exact checkpoint and effort before using their numbers, and check the source before quoting them. If the newest checkpoint has no matching benchmark, treat the family recommendation as provisional and say so when explaining the pick.
+- Grilling a plan or design, where the value is the question nobody thought to ask.
+- Free-hand or unscoped work with no spec, where the model must choose the approach.
+- Creative work: naming, writing with a voice, design exploration.
+
+Give these to Sol at `medium` or above, never to Terra or Luna. Use Astra when the user wants the strongest result and the allowance covers it. Between a larger family at a lower effort and a smaller family at a higher effort with a similar score, take the larger family.
+
+Terra and Luna suit work where the brief carries the knowledge: clear inputs, stated requirements, and a way to verify the result.
+
+## Picks
+
+Each row sat on the Artificial Analysis cost frontier for the snapshot checkpoints: no cheaper setting scored as high. Index is the Intelligence Index score, Cost is dollars per index task at API prices, and Minutes is time per index task. Read Cost and Minutes as ratios between rows, and treat them as estimates for newer checkpoints of the same family.
+
+| Work | Family | Effort | Index | Cost | Minutes |
+| --- | --- | --- | --- | --- | --- |
+| Tagging, routing, or simple extraction at volume | Luna | `low` | 10 | \$0.01 | 0.6 |
+| Finding files, searching code, reading logs, or summarizing | Terra | `low` | 29 | \$0.07 | 1.2 |
+| A scoped code fix, concise writing from supplied material, or computer use with a defined outcome | Terra | `high` | 42 | \$0.26 | 4.2 |
+| Everyday engineering when someone is waiting for the reply | Sol | `low` | 35 | \$0.16 | 1.9 |
+| Everyday engineering and technical work you expect to revise | Sol | `medium` | 46 | \$0.36 | 4.3 |
+| Engineering where edge cases or verification decide the result | Sol | `high` | 50 | \$0.59 | 7.4 |
+| A polished deliverable or a decision from conflicting evidence | Sol | `xhigh` | 52 | \$0.76 | 9.8 |
+| The hardest work when the wait does not matter | Sol | `max` | 55 | \$1.27 | 22.0 |
+
+Two more settings sat on the frontier between those rows: Luna at `medium` (18, \$0.04) and Terra at `medium` (38, \$0.17).
+
+## Astra
+
+Astra buys time, a small ceiling, and the most stored knowledge. Below `max` it sat off the cost frontier, because Sol reached the same scores for under half the draw.
+
+- Astra at `high` (55, \$3.24, 9.5 minutes) matched Sol at `max` in under half the time, for 2.6 times the draw. Use it for the hardest work when someone is waiting, or for the breadth work under [Family size](#family-size) when the allowance covers it.
+- Astra at `max` (57, \$6.24, 24.3 minutes) was the top score, two points over Sol at `max` for 4.9 times the draw. Use it only when the user asks.
+
+## Settings that lose
+
+On the snapshot checkpoints, another setting scored at least as high for less draw:
+
+- Luna above `medium`. Terra at `low` scored higher for the same cost or less, in a fraction of the time.
+- Terra at `xhigh` or `max`. Sol at `medium` and at `xhigh` beat them on score, cost and time.
+- Astra at `low` or `medium`. Sol at `medium` and at `xhigh` scored at least as high for under a third of the draw, and took 0.3 and 2.4 minutes longer.
+- Astra at `xhigh`. Astra at `high` scored the same for less cost and less time.
+- `ultra` on any family. It has no index data and splits the task across parallel subagents. Use it only when the user asks.
+
+## When a pick falls short
+
+Work through this order, one step at a time:
+
+1. Give the model clear inputs, the requirements, and a way to verify the result, such as a regression test or a saved record it can reopen. Terra and Luna depend on this most.
+2. Raise effort to the next supported setting for that family.
+3. Move up a family: from Terra at `high` to Sol at `medium`, and from Sol at `max` to Astra. A wrong approach or missing knowledge needs the larger family, and more effort will not supply it.
+
+## Freshness
+
+The numbers are from Artificial Analysis Intelligence Index v5.0.1, read on 2026-11-12, for the checkpoints named in [references/evidence.md](references/evidence.md). That file also holds the full table, the frontier working, the plan rules, the sources and the refresh steps. Read it before quoting a number to the user, and match a benchmark row to the exact checkpoint and effort first. When the newest checkpoint of a family has no matching row, treat the numbers above as estimates and tell the user the table is stale.

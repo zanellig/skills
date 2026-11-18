@@ -24,17 +24,9 @@ The work runs on a ChatGPT subscription, so the budget is the plan's Codex allow
 
 ## Family size
 
-A larger family holds more patterns from training: more domain knowledge, more ways a plan can fail, more idioms and styles. Reasoning effort only works with what the model already holds, so a small family at high effort reasons longer over a smaller store. The Intelligence Index mixes reasoning, knowledge and coding tasks with known answers, so it understates this gap on open-ended work.
+A larger model stores more patterns from training: domain knowledge, failure modes, idioms, styles. Effort buys more reasoning over that store, not a bigger store. The Intelligence Index scores tasks with known answers, so it understates the gap on open-ended work.
 
-Pick by family first when the task depends on breadth rather than steps:
-
-- Grilling a plan or design, where the value is the question nobody thought to ask.
-- Free-hand or unscoped work with no spec, where the model must choose the approach.
-- Creative work: naming, writing with a voice, design exploration.
-
-Give these to Sol at `medium` or above, never to Terra or Luna. Use Astra when the user wants the strongest result and the allowance covers it. Between a larger family at a lower effort and a smaller family at a higher effort with a similar score, take the larger family.
-
-Terra and Luna suit work where the brief carries the knowledge: clear inputs, stated requirements, and a way to verify the result.
+Grilling a plan, free-hand or unscoped work, and creative work depend on that breadth. Give them Sol at `medium` or above, or Astra when the user wants the strongest result and the allowance covers it. When a larger family at lower effort and a smaller one at higher effort score about the same, take the larger family. Keep Terra and Luna for work where the brief carries the knowledge: clear inputs, stated requirements, and a way to verify the result.
 
 ## Picks
 

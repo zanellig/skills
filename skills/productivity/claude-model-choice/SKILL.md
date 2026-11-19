@@ -19,6 +19,12 @@ The work runs on a Claude subscription (Max or Ultra), so the budget is the week
 
 Fable is the scarce half. Keep it for the lead and for delegated work that needs it, and put the rest on Opus, Sonnet and Haiku.
 
+## Model size
+
+A larger model stores more patterns from training: domain knowledge, failure modes, idioms, styles. Effort buys more reasoning over that store, not a bigger store. The Intelligence Index scores tasks with known answers, so it understates the gap on open-ended work.
+
+Grilling a plan, free-hand or unscoped work, and creative work depend on that breadth. Give them Opus at `medium` or above, or Fable when the work justifies spending the Fable half. When a larger model at lower effort and a smaller one at higher effort score about the same, take the larger model. Keep Haiku and Sonnet for work where the brief carries the knowledge: a specific, step-by-step brief and a way to check the result.
+
 ## Picks
 
 Each row sits on the Artificial Analysis frontier for its pool: within Fable, or within the other three models, no setting scores higher for less. Index is the Intelligence Index score, Cost is dollars per index task at API prices, and Minutes is time per index task. Read Cost and Minutes as ratios between rows.
@@ -58,7 +64,7 @@ Work through Anthropic's order, one step at a time:
 
 ## Briefing
 
-Give Haiku work where a wrong answer is cheap to spot. Send code edits to Sonnet or above, and keep judgment calls with the lead. Smaller models do better with specific, step-by-step briefs than with open-ended ones.
+Give Haiku work where a wrong answer is cheap to spot. Send code edits to Sonnet or above, and keep judgment calls with the lead.
 
 ## Outside this table
 

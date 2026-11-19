@@ -4,6 +4,8 @@ Everything here was read on 2026-11-12 through an automated page fetch, which ca
 
 ## Artificial Analysis table
 
+In this snapshot, Luna means `gpt-6-luna`, Terra means `gpt-6.1-terra`, Sol means `gpt-6.1-sol` unless qualified, and Astra means `gpt-6-astra`.
+
 Source: the [Artificial Analysis model leaderboard](https://artificialanalysis.ai/leaderboards/models), Intelligence Index v5.0.1. Cost is the weighted average cost per Intelligence Index task at API list prices. Minutes is output tokens divided by end-to-end output speed, per task. The index mixes reasoning, knowledge and coding evaluations, so it is not an agentic coding benchmark. These figures have one source and were not cross-checked against a second page.
 
 Rows are sorted by cost.
@@ -42,7 +44,7 @@ A setting is on the cost frontier when no cheaper setting scores as high. Sorted
 - On cost: Luna low, Luna medium, Terra low, Sol low, Terra medium, Terra high, Sol medium, Sol high, Sol xhigh, Sol max, Astra max.
 - On time instead of cost: Luna low, Terra low, Sol low, Terra medium, Astra low, Sol medium, Astra medium, Astra high, Astra max.
 
-Astra appears on the cost frontier only at max, and on the time frontier at every level except xhigh. That is why the skill treats Astra as the way to buy time.
+Astra appears on the cost frontier only at max, and on the time frontier at every level except xhigh. This comparison applies to the checkpoints in the table.
 
 ## Plan rules
 
@@ -104,4 +106,4 @@ The skill follows the index for effort, as its owner asked, and keeps OpenAI's t
 1. Fetch the [leaderboard](https://artificialanalysis.ai/leaderboards/models) and list every OpenAI row with its index, cost per task and minutes per task.
 2. Recompute the cost and time frontiers as described above.
 3. Re-read the pricing page and confirm the credit rates still equal 25 times the API prices.
-4. Update the picks and the date in `SKILL.md`, and this file's tables.
+4. Update the checkpoint labels, tables, and date here. Revise the family and effort recommendations in `SKILL.md` if the new evidence changes them.

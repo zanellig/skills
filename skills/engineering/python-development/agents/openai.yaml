@@ -1,0 +1,3 @@
+interface:
+  display_name: "Python development"
+  short_description: "Python tooling with uv, Ruff, types, tests, and settings"

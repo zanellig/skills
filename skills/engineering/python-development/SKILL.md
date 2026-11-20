@@ -73,15 +73,17 @@ If accepted, run `uv add --dev prek`. Reuse the existing hook configuration and
 preserve unrelated hooks. For new Python hooks use `repo: local` and
 `language: system` so hooks and CI use the versions in `uv.lock`:
 
-- Ruff lint entry: `uv run --no-sync ruff check --fix`.
-- Ruff format entry: `uv run --no-sync ruff format`, after the lint hook.
+- Ruff lint entry: `uv run --no-sync ruff check --force-exclude --fix`.
+- Ruff format entry: `uv run --no-sync ruff format --force-exclude`, after the lint hook.
 - Type-check entry: `uv run --no-sync basedpyright`, with `pass_filenames: false`
   and `always_run: true` to check the configured project even for config changes.
 
-Use `types_or: [python, pyi]` for the Ruff hooks. Sync the project environment
-with `uv sync --locked` after dependency changes and before running hooks on a
-fresh checkout, since `--no-sync` uses the existing environment. Verify with
-`uv run prek run --all-files` before enabling hooks with `uv run prek install`.
+Use `types_or: [python, pyi, jupyter]` for the Ruff hooks. `--force-exclude`
+keeps explicitly passed filenames subject to the same exclusions as CI.
+Sync the project environment with `uv sync --locked` after dependency changes
+and before running hooks on a fresh checkout, since `--no-sync` uses the existing
+environment. Verify with `uv run prek run --all-files` before enabling hooks
+with `uv run prek install`.
 
 ## Completion
 

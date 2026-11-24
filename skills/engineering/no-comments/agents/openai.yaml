@@ -1,0 +1,5 @@
+interface:
+  display_name: "No comments"
+  short_description: "Delete comments the code could say, and fix what they covered for"
+policy:
+  allow_implicit_invocation: false

@@ -7,6 +7,7 @@
 - **[codebase-design](./engineering/codebase-design/SKILL.md)** — Shared vocabulary for designing deep modules.
 - **[diagnosing-bugs](./engineering/diagnosing-bugs/SKILL.md)** — Diagnosis loop for hard bugs and performance regressions.
 - **[implement-spec](./engineering/implement-spec/SKILL.md)** — Implement the result of /to-spec and /to-tickets in code.
+- **[no-comments](./engineering/no-comments/SKILL.md)** — Delete the comments in a change that the code could say instead, and fix the code they were covering for.
 - **[python-development](./engineering/python-development/SKILL.md)** — Python toolchain with uv, Ruff, basedpyright, pytest, and pydantic-settings.
 - **[research](./engineering/research/SKILL.md)** — Investigate a question against high-trust primary sources and capture the findings as a Markdown file in the repo.
 - **[to-spec](./engineering/to-spec/SKILL.md)** — Turn the current conversation into a spec and publish it to the project issue tracker: no interview, just synthesis of what you've already discussed.

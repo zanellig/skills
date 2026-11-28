@@ -1,6 +1,6 @@
 ---
-name: for-fable-only
-description: Invoke this skill only if you're Claude Fable, on every session.
+name: frontier-claude
+description: Invoke this skill only if you're Claude Fable or Claude Opus, on every session.
 ---
 
 Here's some instructions for you. You must follow them on every session and treat them as an addendum to CLAUDE.md's instructions.

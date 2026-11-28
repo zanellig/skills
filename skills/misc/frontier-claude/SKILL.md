@@ -1,5 +1,5 @@
 ---
-name: for-fable-and-opus
+name: frontier-claude
 description: Invoke this skill only if you're Claude Fable or Claude Opus, on every session.
 ---
 
